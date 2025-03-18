@@ -14,10 +14,14 @@
     "@react-navigation/stack": "^7.1.2",
     "@xmldom/xmldom": "^0.9.8",
     "expo": "~52.0.38",
+<<<<<<< HEAD
     "expo-auth-session": "~6.0.3",
     "expo-secure-store": "~14.0.1",
     "expo-status-bar": "~2.0.1",
     "firebase": "^11.4.0",
+=======
+    "expo-status-bar": "~2.0.1",
+>>>>>>> 97ee4c4208beb2def251f74fea9a3e7804147b49
     "glob": "^11.0.1",
     "react": "18.3.1",
     "react-dom": "18.3.1",
