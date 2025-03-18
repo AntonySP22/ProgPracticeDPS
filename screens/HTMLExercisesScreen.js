@@ -160,7 +160,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   title: {
-    fontSize: 24,
+    fontSize: 25,
     fontWeight: 'bold',
     color: '#2D2D2D',
     marginBottom: 10,
