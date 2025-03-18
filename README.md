@@ -17,7 +17,7 @@
 
 📌 **Diseños Mockups:** [MockUps en Figma](https://www.figma.com/design/9ySzJIC4WoWSSgYXnaz3pq/ProgPractice?node-id=0-1&p=f&t=56XKcwEtE3sKzddR-0)
 
-📌 **Documento del Proyecto (PDF):** [Proyecto de Catedra - Fase 1](--)
+📌 **Documento del Proyecto (PDF):** [Proyecto de Catedra - Fase 1](https://drive.google.com/file/d/1S5RRrFiurgbpfjnz-7C1wk47I0EVrqt7/view?usp=sharing)
 
 ---
 
