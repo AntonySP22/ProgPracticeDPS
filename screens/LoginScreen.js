@@ -1,26 +1,179 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, ImageBackground, Alert } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
+<<<<<<< HEAD
+=======
+import { auth, db } from '../services/firebase';
+// import AsyncStorage from '@react-native-async-storage/async-storage';
+import Spinner from 'react-native-loading-spinner-overlay';
+import logger from '../services/logger';
+import NetInfo from '@react-native-community/netinfo';
+import sessionStorage from '../services/sessionStorage';
+
+// Alternativa temporal por si AsyncStorage falla
+const tempStorage = {
+  userData: null,
+  setItem: function(key, value) {
+    this.userData = value;
+    console.log('Datos guardados en almacenamiento temporal');
+    return Promise.resolve();
+  },
+  getItem: function(key) {
+    return Promise.resolve(this.userData);
+  }
+};
+>>>>>>> adan
 
 const LoginScreen = ({ navigation }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+<<<<<<< HEAD
 
   const handleLogin = () => {
     if (username.trim() && password.trim()) {
       console.log('Iniciar sesión con:', username, password);
       navigation.navigate('Home');
     } else {
+=======
+  const [isLoading, setIsLoading] = useState(false);
+
+  const isValidEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  const handleLogin = async () => {
+    if (!username.trim() || !password.trim()) {
+>>>>>>> adan
       Alert.alert(
         'Campos vacíos',
         'Por favor ingresa usuario y contraseña',
         [{ text: 'OK' }]
       );
+<<<<<<< HEAD
     }
   };
 
   const handleForgotPassword = () => {
     navigation.navigate('PasswordScreen'); 
+=======
+      return;
+    }
+
+    if (!isValidEmail(username)) {
+      Alert.alert(
+        'Formato de correo inválido',
+        'Por favor ingresa una dirección de correo válida (ejemplo@dominio.com)',
+        [{ text: 'Entendido' }]
+      );
+      return;
+    }
+
+    
+    console.log('Intentando iniciar sesión con:', username);
+
+    
+    try {
+      const netInfo = await NetInfo.fetch();
+      if (!netInfo.isConnected) {
+        Alert.alert(
+          'Sin conexión',
+          'Por favor verifica tu conexión a internet e intenta nuevamente',
+          [{ text: 'Entendido' }]
+        );
+        return;
+      }
+      setIsLoading(true);
+
+      if (!auth) {
+        throw new Error('Firebase Auth no está inicializado correctamente');
+      }
+
+
+      console.log('Autenticando con Firebase...');
+      const userCredential = await auth.signInWithEmailAndPassword(username, password);
+      const uid = userCredential.user.uid;
+      
+      console.log('Inicio de sesión exitoso con UID:', uid);
+
+  
+      console.log('Obteniendo datos del usuario...');
+      const userDoc = await db.collection('users').doc(uid).get();
+
+      if (userDoc.exists) {
+       
+        const userData = userDoc.data();
+        
+        console.log('Datos del usuario obtenidos:', userData);
+
+
+        const userDataObj = {
+          uid,
+          email: username,
+          nombre: userData.nombre || '',
+          profileImage: userData.profileImage || '',
+          score: userData.score || 0
+        };
+
+
+        try {
+          await sessionStorage.setItem('userData', JSON.stringify(userDataObj));
+          console.log('Datos de usuario guardados correctamente en sessionStorage');
+        } catch (error) {
+          console.error('Error al guardar datos de usuario:', error);
+        }
+        
+        navigation.navigate('Home');
+      } else {
+        // El usuario no existe en Firestore
+        console.log('Usuario no encontrado en Firestore');
+        await auth.signOut();
+        Alert.alert(
+          'Cuenta incompleta',
+          'Tu cuenta no está registrada correctamente. Por favor regístrate de nuevo.',
+          [
+            {
+              text: 'Registrarme',
+              onPress: () => navigation.navigate('SignUp')
+            },
+            {
+              text: 'Cancelar',
+              style: 'cancel'
+            }
+          ]
+        );
+      }
+    } catch (error) {
+      console.error('Error en inicio de sesión:', error.message);
+      
+      
+      let errorInfo;
+      try {
+        errorInfo = logger.authError(error);
+      } catch (loggerError) {
+        console.error('Error en logger:', loggerError);
+        errorInfo = {
+          title: 'Error de inicio de sesión',
+          message: 'No se pudo iniciar sesión. Por favor verifica tus credenciales e intenta nuevamente.'
+        };
+      }
+
+  
+      Alert.alert(
+        errorInfo.title,
+        errorInfo.message,
+        [{ text: 'Entendido' }]
+      );
+    } finally {
+    
+      setIsLoading(false);
+    }
+  };
+
+
+  const handleForgotPassword = () => {
+    navigation.navigate('PasswordScreen');
+>>>>>>> adan
   };
 
   const handleGoBack = () => {
@@ -31,6 +184,17 @@ const LoginScreen = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
+<<<<<<< HEAD
+=======
+      {/* Spinner de carga */}
+      <Spinner
+        visible={isLoading}
+        textContent={'Iniciando sesión...'}
+        textStyle={styles.spinnerTextStyle}
+        overlayColor="rgba(0, 0, 0, 0.7)"
+      />
+
+>>>>>>> adan
       <Image source={require('../assets/login-wave.png')} style={styles.wavesTop} />
 
       <TouchableOpacity onPress={handleGoBack} style={styles.backButton}>
@@ -39,16 +203,28 @@ const LoginScreen = ({ navigation }) => {
 
       <View style={styles.headerContainer}>
         <Text style={styles.title}>¡Bienvenido!</Text>
+<<<<<<< HEAD
 
+=======
+>>>>>>> adan
         <Image source={require('../assets/login-avatar.png')} style={styles.avatar} />
       </View>
 
       <TextInput
         style={styles.input}
+<<<<<<< HEAD
         placeholder="Usuario"
         value={username}
         onChangeText={setUsername}
         autoCapitalize="none"
+=======
+        placeholder="Correo electrónico"
+        value={username}
+        onChangeText={setUsername}
+        autoCapitalize="none"
+        keyboardType="email-address"
+        editable={!isLoading}
+>>>>>>> adan
       />
 
       <TextInput
@@ -57,6 +233,7 @@ const LoginScreen = ({ navigation }) => {
         value={password}
         onChangeText={setPassword}
         secureTextEntry
+<<<<<<< HEAD
       />
 
       <TouchableOpacity onPress={handleForgotPassword}>
@@ -67,13 +244,33 @@ const LoginScreen = ({ navigation }) => {
         onPress={handleLogin} 
         style={styles.buttonContainer}
         activeOpacity={0.7}
+=======
+        editable={!isLoading}
+      />
+
+      <TouchableOpacity onPress={handleForgotPassword} disabled={isLoading}>
+        <Text style={styles.forgotPasswordText}>¿Olvidé mi contraseña?</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        onPress={handleLogin}
+        style={[styles.buttonContainer, isLoading && styles.buttonDisabled]}
+        activeOpacity={0.7}
+        disabled={isLoading}
+>>>>>>> adan
       >
         <ImageBackground
           source={require('../assets/button-bg-1.png')}
           style={styles.buttonBackground}
           resizeMode="cover"
         >
+<<<<<<< HEAD
           <Text style={styles.buttonText}>Iniciar Sesión</Text>
+=======
+          <Text style={styles.buttonText}>
+            {isLoading ? 'Iniciando...' : 'Iniciar Sesión'}
+          </Text>
+>>>>>>> adan
         </ImageBackground>
       </TouchableOpacity>
 
@@ -84,6 +281,7 @@ const LoginScreen = ({ navigation }) => {
       </View>
 
       <View style={styles.socialIconsContainer}>
+<<<<<<< HEAD
         <TouchableOpacity style={styles.socialIcon}>
           <Image source={require('../assets/google-icon.png')} style={styles.socialIconImage} />
         </TouchableOpacity>
@@ -94,6 +292,20 @@ const LoginScreen = ({ navigation }) => {
           <Image source={require('../assets/twitter-icon.png')} style={styles.socialIconImage} />
         </TouchableOpacity>
         <TouchableOpacity style={styles.socialIcon}>
+=======
+        <TouchableOpacity
+          style={styles.socialIcon}
+        >
+          <Image source={require('../assets/google-icon.png')} style={styles.socialIconImage} />
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.socialIcon} disabled={isLoading}>
+          <Image source={require('../assets/facebook-icon.png')} style={styles.socialIconImage} />
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.socialIcon} disabled={isLoading}>
+          <Image source={require('../assets/twitter-icon.png')} style={styles.socialIconImage} />
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.socialIcon} disabled={isLoading}>
+>>>>>>> adan
           <Image source={require('../assets/apple-icon.png')} style={styles.socialIconImage} />
         </TouchableOpacity>
       </View>
@@ -110,6 +322,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#ffffff',
   },
+<<<<<<< HEAD
+=======
+  spinnerTextStyle: {
+    color: '#FFFFFF',
+    fontWeight: 'bold',
+  },
+>>>>>>> adan
   wavesTop: {
     position: 'absolute',
     top: 0,
@@ -160,6 +379,12 @@ const styles = StyleSheet.create({
     height: 70,
     marginBottom: 16,
   },
+<<<<<<< HEAD
+=======
+  buttonDisabled: {
+    opacity: 0.7,
+  },
+>>>>>>> adan
   buttonBackground: {
     width: '100%',
     height: '100%',

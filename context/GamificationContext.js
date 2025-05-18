@@ -23,5 +23,11 @@ export const GamificationProvider = ({ children }) => {
     <GamificationContext.Provider value={{ xp, bits, streak, addXp, addBits, incrementStreak }}>
       {children}
     </GamificationContext.Provider>
+<<<<<<< HEAD
   );
 };
+=======
+
+  );
+};
+>>>>>>> adan

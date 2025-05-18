@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "236707517987",
+    "project_id": "progpractice-e9868",
+    "storage_bucket": "progpractice-e9868.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:236707517987:android:dd227e7fd032ac80948396",
+        "android_client_info": {
+          "package_name": "com.progpractice.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDhp8v0A3L05SAdmSFz6B3TfteIEzYosUQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

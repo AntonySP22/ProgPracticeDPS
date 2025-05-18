@@ -1,9 +1,71 @@
+<<<<<<< HEAD
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image, ScrollView, Modal } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 
 const HomeScreen = ({ navigation }) => {
   const [isMenuVisible, setIsMenuVisible] = useState(false);
+=======
+import React, { useState, useEffect } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, Image, ScrollView, Modal, Alert } from 'react-native';
+import Icon from 'react-native-vector-icons/Ionicons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { auth, db } from '../services/firebase'; // Asegúrate de importar db también
+
+const HomeScreen = ({ navigation }) => {
+  const [isMenuVisible, setIsMenuVisible] = useState(false);
+  const [userData, setUserData] = useState(null);
+
+  // Cargar datos del usuario al montar el componente
+  useEffect(() => {
+    const getUserData = async () => {
+      try {
+        console.log('Verificando datos en AsyncStorage...');
+        const storedUserData = await AsyncStorage.getItem('userData');
+
+        if (storedUserData) {
+          const parsedUserData = JSON.parse(storedUserData);
+          console.log('Datos encontrados en AsyncStorage:', parsedUserData);
+          setUserData(parsedUserData);
+        } else {
+          console.log('No hay datos en AsyncStorage');
+          const currentUser = auth.currentUser;
+
+          if (currentUser) {
+            console.log('Usuario autenticado en Firebase, obteniendo datos de Firestore');
+            const userDoc = await db.collection('users').doc(currentUser.uid).get();
+
+            if (userDoc.exists) {
+              const firestoreData = userDoc.data();
+              const userData = {
+                uid: currentUser.uid,
+                email: currentUser.email,
+                nombre: firestoreData.nombre,
+                apellido: firestoreData.apellido,
+                score: firestoreData.score || 0
+              };
+
+              await AsyncStorage.setItem('userData', JSON.stringify(userData));
+              setUserData(userData);
+            } else {
+              console.log('No hay datos en Firestore');
+              Alert.alert('Sesión expirada', 'Por favor inicia sesión nuevamente');
+              navigation.navigate('Login');
+            }
+          } else {
+            console.log('Usuario no autenticado');
+            Alert.alert('Sesión expirada', 'Por favor inicia sesión nuevamente');
+            navigation.navigate('Login');
+          }
+        }
+      } catch (error) {
+        console.error('Error al cargar datos de usuario:', error);
+      }
+    };
+
+    getUserData();
+  }, []);
+>>>>>>> adan
 
   const toggleMenu = () => {
     setIsMenuVisible(!isMenuVisible);
@@ -14,13 +76,46 @@ const HomeScreen = ({ navigation }) => {
     navigation.navigate(screen);
   };
 
+<<<<<<< HEAD
+=======
+  const handleLogout = async () => {
+    try {
+      await auth.signOut();
+      await AsyncStorage.removeItem('userData');
+      navigation.navigate('Welcome');
+    } catch (error) {
+      console.error('Error al cerrar sesión:', error);
+      Alert.alert('Error', 'No se pudo cerrar sesión correctamente');
+    }
+  };
+
+
+>>>>>>> adan
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.spacer} />
       {/* Encabezado con avatar y nombre */}
+<<<<<<< HEAD
       <View style={styles.header}>
         <Image source={require('../assets/usuario.png')} style={styles.userAvatar} />
         <Text style={styles.welcomeText}>Bienvenido, Usuario</Text>
+=======
+
+      <View style={styles.header}>
+
+        <Image
+          source={
+            userData && userData.profileImage
+              ? { uri: userData.profileImage } 
+              : require('../assets/usuario.png')
+          }
+          style={styles.userAvatar}
+        />
+
+        <Text style={styles.welcomeText}>
+          Bienvenido, {userData ? `${userData.nombre}` : 'Cargando...'}
+        </Text>
+>>>>>>> adan
         <TouchableOpacity onPress={toggleMenu} style={styles.menuButton}>
           <Icon name="menu" size={28} color="#FFFFFF" />
         </TouchableOpacity>
@@ -46,6 +141,12 @@ const HomeScreen = ({ navigation }) => {
             <TouchableOpacity style={styles.menuItem} onPress={() => navigateTo('HelpScreen')}>
               <Text style={styles.menuItemText}>Ayuda</Text>
             </TouchableOpacity>
+<<<<<<< HEAD
+=======
+            <TouchableOpacity style={styles.menuItem} onPress={handleLogout}>
+              <Text style={[styles.menuItemText, { color: '#FF3B30' }]}>Cerrar sesión</Text>
+            </TouchableOpacity>
+>>>>>>> adan
           </View>
         </View>
       </Modal>
@@ -61,7 +162,11 @@ const HomeScreen = ({ navigation }) => {
       <View style={styles.statsContainer}>
         <View style={styles.statItem}>
           <Icon name="star" size={24} color="#FFD700" />
+<<<<<<< HEAD
           <Text style={styles.statsText}>1,250 puntos</Text>
+=======
+          <Text style={styles.statsText}>{userData ? `${userData.score}` : '0'} puntos</Text>
+>>>>>>> adan
         </View>
         <View style={styles.statItem}>
           <Icon name="trophy" size={24} color="#FF5733" />
@@ -69,6 +174,11 @@ const HomeScreen = ({ navigation }) => {
         </View>
       </View>
 
+<<<<<<< HEAD
+=======
+      {/* Resto del código igual... */}
+
+>>>>>>> adan
       <Text style={styles.sectionTitle}>Cursos en progreso</Text>
       <View style={styles.courseList}>
         <View style={styles.courseItem}>
