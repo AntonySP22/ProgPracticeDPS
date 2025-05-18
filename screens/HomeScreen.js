@@ -1,12 +1,62 @@
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, Image, ScrollView, Modal, StyleSheet } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, Image, ScrollView, Modal, Alert } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { auth, db } from '../services/firebase'; // Asegúrate de importar db también
 
-const HomeScreen = ({ navigation, route }) => {
+const HomeScreen = ({ navigation }) => {
   const [isMenuVisible, setIsMenuVisible] = useState(false);
+  const [userData, setUserData] = useState(null);
 
-  // Recibe los datos de Google o usa valores predeterminados
-  const { name = 'Usuario', email, photo } = route.params || {};
+  // Cargar datos del usuario al montar el componente
+  useEffect(() => {
+    const getUserData = async () => {
+      try {
+        console.log('Verificando datos en AsyncStorage...');
+        const storedUserData = await AsyncStorage.getItem('userData');
+
+        if (storedUserData) {
+          const parsedUserData = JSON.parse(storedUserData);
+          console.log('Datos encontrados en AsyncStorage:', parsedUserData);
+          setUserData(parsedUserData);
+        } else {
+          console.log('No hay datos en AsyncStorage');
+          const currentUser = auth.currentUser;
+
+          if (currentUser) {
+            console.log('Usuario autenticado en Firebase, obteniendo datos de Firestore');
+            const userDoc = await db.collection('users').doc(currentUser.uid).get();
+
+            if (userDoc.exists) {
+              const firestoreData = userDoc.data();
+              const userData = {
+                uid: currentUser.uid,
+                email: currentUser.email,
+                nombre: firestoreData.nombre,
+                apellido: firestoreData.apellido,
+                score: firestoreData.score || 0
+              };
+
+              await AsyncStorage.setItem('userData', JSON.stringify(userData));
+              setUserData(userData);
+            } else {
+              console.log('No hay datos en Firestore');
+              Alert.alert('Sesión expirada', 'Por favor inicia sesión nuevamente');
+              navigation.navigate('Login');
+            }
+          } else {
+            console.log('Usuario no autenticado');
+            Alert.alert('Sesión expirada', 'Por favor inicia sesión nuevamente');
+            navigation.navigate('Login');
+          }
+        }
+      } catch (error) {
+        console.error('Error al cargar datos de usuario:', error);
+      }
+    };
+
+    getUserData();
+  }, []);
 
   const toggleMenu = () => {
     setIsMenuVisible(!isMenuVisible);
@@ -17,18 +67,37 @@ const HomeScreen = ({ navigation, route }) => {
     navigation.navigate(screen);
   };
 
+  const handleLogout = async () => {
+    try {
+      await auth.signOut();
+      await AsyncStorage.removeItem('userData');
+      navigation.navigate('Welcome');
+    } catch (error) {
+      console.error('Error al cerrar sesión:', error);
+      Alert.alert('Error', 'No se pudo cerrar sesión correctamente');
+    }
+  };
+
+
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.spacer} />
-
       {/* Encabezado con avatar y nombre */}
+
       <View style={styles.header}>
-        {photo ? (
-          <Image source={{ uri: photo }} style={styles.userAvatar} />
-        ) : (
-          <Image source={require('../assets/usuario.png')} style={styles.userAvatar} />
-        )}
-        <Text style={styles.welcomeText}>Bienvenido, {name}</Text>
+
+        <Image
+          source={
+            userData && userData.profileImage
+              ? { uri: userData.profileImage } 
+              : require('../assets/usuario.png')
+          }
+          style={styles.userAvatar}
+        />
+
+        <Text style={styles.welcomeText}>
+          Bienvenido, {userData ? `${userData.nombre}` : 'Cargando...'}
+        </Text>
         <TouchableOpacity onPress={toggleMenu} style={styles.menuButton}>
           <Icon name="menu" size={28} color="#FFFFFF" />
         </TouchableOpacity>
@@ -54,6 +123,9 @@ const HomeScreen = ({ navigation, route }) => {
             <TouchableOpacity style={styles.menuItem} onPress={() => navigateTo('HelpScreen')}>
               <Text style={styles.menuItemText}>Ayuda</Text>
             </TouchableOpacity>
+            <TouchableOpacity style={styles.menuItem} onPress={handleLogout}>
+              <Text style={[styles.menuItemText, { color: '#FF3B30' }]}>Cerrar sesión</Text>
+            </TouchableOpacity>
           </View>
         </View>
       </Modal>
@@ -69,13 +141,15 @@ const HomeScreen = ({ navigation, route }) => {
       <View style={styles.statsContainer}>
         <View style={styles.statItem}>
           <Icon name="star" size={24} color="#FFD700" />
-          <Text style={styles.statsText}>1,250 puntos</Text>
+          <Text style={styles.statsText}>{userData ? `${userData.score}` : '0'} puntos</Text>
         </View>
         <View style={styles.statItem}>
           <Icon name="trophy" size={24} color="#FF5733" />
           <Text style={styles.statsText}>5 logros</Text>
         </View>
       </View>
+
+      {/* Resto del código igual... */}
 
       <Text style={styles.sectionTitle}>Cursos en progreso</Text>
       <View style={styles.courseList}>
