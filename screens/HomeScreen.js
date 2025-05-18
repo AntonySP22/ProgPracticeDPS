@@ -1,11 +1,3 @@
-<<<<<<< HEAD
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Image, ScrollView, Modal } from 'react-native';
-import Icon from 'react-native-vector-icons/Ionicons';
-
-const HomeScreen = ({ navigation }) => {
-  const [isMenuVisible, setIsMenuVisible] = useState(false);
-=======
 import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image, ScrollView, Modal, Alert } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -65,7 +57,6 @@ const HomeScreen = ({ navigation }) => {
 
     getUserData();
   }, []);
->>>>>>> adan
 
   const toggleMenu = () => {
     setIsMenuVisible(!isMenuVisible);
@@ -76,8 +67,6 @@ const HomeScreen = ({ navigation }) => {
     navigation.navigate(screen);
   };
 
-<<<<<<< HEAD
-=======
   const handleLogout = async () => {
     try {
       await auth.signOut();
@@ -90,16 +79,10 @@ const HomeScreen = ({ navigation }) => {
   };
 
 
->>>>>>> adan
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.spacer} />
       {/* Encabezado con avatar y nombre */}
-<<<<<<< HEAD
-      <View style={styles.header}>
-        <Image source={require('../assets/usuario.png')} style={styles.userAvatar} />
-        <Text style={styles.welcomeText}>Bienvenido, Usuario</Text>
-=======
 
       <View style={styles.header}>
 
@@ -115,7 +98,6 @@ const HomeScreen = ({ navigation }) => {
         <Text style={styles.welcomeText}>
           Bienvenido, {userData ? `${userData.nombre}` : 'Cargando...'}
         </Text>
->>>>>>> adan
         <TouchableOpacity onPress={toggleMenu} style={styles.menuButton}>
           <Icon name="menu" size={28} color="#FFFFFF" />
         </TouchableOpacity>
@@ -141,12 +123,9 @@ const HomeScreen = ({ navigation }) => {
             <TouchableOpacity style={styles.menuItem} onPress={() => navigateTo('HelpScreen')}>
               <Text style={styles.menuItemText}>Ayuda</Text>
             </TouchableOpacity>
-<<<<<<< HEAD
-=======
             <TouchableOpacity style={styles.menuItem} onPress={handleLogout}>
               <Text style={[styles.menuItemText, { color: '#FF3B30' }]}>Cerrar sesión</Text>
             </TouchableOpacity>
->>>>>>> adan
           </View>
         </View>
       </Modal>
@@ -162,11 +141,7 @@ const HomeScreen = ({ navigation }) => {
       <View style={styles.statsContainer}>
         <View style={styles.statItem}>
           <Icon name="star" size={24} color="#FFD700" />
-<<<<<<< HEAD
-          <Text style={styles.statsText}>1,250 puntos</Text>
-=======
           <Text style={styles.statsText}>{userData ? `${userData.score}` : '0'} puntos</Text>
->>>>>>> adan
         </View>
         <View style={styles.statItem}>
           <Icon name="trophy" size={24} color="#FF5733" />
@@ -174,11 +149,8 @@ const HomeScreen = ({ navigation }) => {
         </View>
       </View>
 
-<<<<<<< HEAD
-=======
       {/* Resto del código igual... */}
 
->>>>>>> adan
       <Text style={styles.sectionTitle}>Cursos en progreso</Text>
       <View style={styles.courseList}>
         <View style={styles.courseItem}>

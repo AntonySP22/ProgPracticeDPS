@@ -160,11 +160,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   title: {
-<<<<<<< HEAD
-    fontSize: 24,
-=======
     fontSize: 25,
->>>>>>> adan
     fontWeight: 'bold',
     color: '#2D2D2D',
     marginBottom: 10,
@@ -245,8 +241,4 @@ const styles = StyleSheet.create({
   },
 });
 
-<<<<<<< HEAD
 export default HTMLExercisesScreen;
-=======
-export default HTMLExercisesScreen;
->>>>>>> adan

@@ -1,7 +1,4 @@
 import React, { useState } from 'react';
-<<<<<<< HEAD
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, ImageBackground, ScrollView, Alert } from 'react-native';
-=======
 import {
   View, Text, TextInput, TouchableOpacity, StyleSheet,
   Image, ImageBackground, ScrollView, Alert
@@ -10,7 +7,6 @@ import { auth, db, firebaseTimestamp } from '../services/firebase';
 import NetInfo from '@react-native-community/netinfo';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Spinner from 'react-native-loading-spinner-overlay';
->>>>>>> adan
 
 const SignUpScreen = ({ navigation }) => {
   const [name, setName] = useState('');
@@ -18,15 +14,6 @@ const SignUpScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-<<<<<<< HEAD
-
-  const handleRegister = () => {
-    if (!name || !lastName || !email || !password || !confirmPassword) {
-      Alert.alert(
-        'Campos incompletos',
-        'Por favor, completa todos los campos.',
-        [{ text: 'OK' }]
-=======
   const [isLoading, setIsLoading] = useState(false);
   const [emailError, setEmailError] = useState('');
 
@@ -68,23 +55,11 @@ const SignUpScreen = ({ navigation }) => {
       Alert.alert(
         'Formato de correo inválido', 
         'Por favor ingresa una dirección de correo válida (ejemplo@dominio.com)'
->>>>>>> adan
       );
       return;
     }
 
     if (password !== confirmPassword) {
-<<<<<<< HEAD
-      Alert.alert(
-        'Contraseñas no coinciden',
-        'Las contraseñas no coinciden. Por favor, verifica.',
-        [{ text: 'OK' }]
-      );
-      return;
-    }
-
-    navigation.replace('Home');
-=======
       Alert.alert('Contraseñas no coinciden', 'Por favor, verifica que ambas contraseñas sean iguales.');
       return;
     }
@@ -214,58 +189,11 @@ const SignUpScreen = ({ navigation }) => {
     } finally {
       setIsLoading(false);
     }
->>>>>>> adan
   };
 
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>
       <View style={styles.container}>
-<<<<<<< HEAD
-        <Image 
-          source={require('../assets/login-wave.png')} 
-          style={styles.waveTop} 
-        />
-
-        <Text style={styles.title}>¡Bienvenido!</Text>
-
-        <View style={styles.formContainer}>
-          <TextInput
-            style={styles.input}
-            placeholder="Nombre"
-            value={name}
-            onChangeText={setName}
-          />
-          
-          <TextInput
-            style={styles.input}
-            placeholder="Apellido"
-            value={lastName}
-            onChangeText={setLastName}
-          />
-
-          <TextInput
-            style={styles.input}
-            placeholder="Correo"
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-          />
-
-          <TextInput
-            style={styles.input}
-            placeholder="Contraseña"
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-          />
-
-          <TextInput
-            style={styles.input}
-            placeholder="Confirmar contraseña"
-            value={confirmPassword}
-            onChangeText={setConfirmPassword}
-            secureTextEntry
-=======
         {/* Spinner de carga */}
         <Spinner
           visible={isLoading}
@@ -319,26 +247,10 @@ const SignUpScreen = ({ navigation }) => {
             onChangeText={setConfirmPassword} 
             secureTextEntry 
             editable={!isLoading}
->>>>>>> adan
           />
         </View>
 
         <TouchableOpacity 
-<<<<<<< HEAD
-          style={styles.buttonContainer} 
-          onPress={handleRegister}
-        >
-          <ImageBackground
-            source={require('../assets/button-bg-1.png')}
-            style={styles.buttonBackground}
-            resizeMode="stretch"
-          >
-            <Text style={styles.buttonText}>Registrarse</Text>
-          </ImageBackground>
-        </TouchableOpacity>
-
-        <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-=======
           style={[styles.buttonContainer, isLoading && styles.buttonDisabled]} 
           onPress={handleRegister}
           disabled={isLoading}
@@ -355,7 +267,6 @@ const SignUpScreen = ({ navigation }) => {
         </TouchableOpacity>
 
         <TouchableOpacity onPress={() => navigation.navigate('Login')} disabled={isLoading}>
->>>>>>> adan
           <Text style={styles.link}>¿Ya tienes una cuenta? Inicia Sesión</Text>
         </TouchableOpacity>
       </View>
@@ -372,13 +283,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     alignItems: 'center',
   },
-<<<<<<< HEAD
-=======
   spinnerTextStyle: {
     color: '#FFFFFF',
     fontWeight: 'bold',
   },
->>>>>>> adan
   waveTop: {
     width: '100%',
     height: 200,
@@ -407,8 +315,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     backgroundColor: '#fff',
   },
-<<<<<<< HEAD
-=======
   inputError: {
     borderColor: 'red',
     borderWidth: 1,
@@ -420,7 +326,6 @@ const styles = StyleSheet.create({
     marginTop: -10,
     marginBottom: 10,
   },
->>>>>>> adan
   buttonContainer: {
     width: '60%',
     height: 70,
@@ -429,12 +334,9 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     alignSelf: 'center',
   },
-<<<<<<< HEAD
-=======
   buttonDisabled: {
     opacity: 0.7,
   },
->>>>>>> adan
   buttonBackground: {
     flex: 1,
     justifyContent: 'center',

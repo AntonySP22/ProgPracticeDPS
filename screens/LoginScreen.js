@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, ImageBackground, Alert } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
-<<<<<<< HEAD
-=======
 import { auth, db } from '../services/firebase';
 // import AsyncStorage from '@react-native-async-storage/async-storage';
 import Spinner from 'react-native-loading-spinner-overlay';
@@ -22,19 +20,10 @@ const tempStorage = {
     return Promise.resolve(this.userData);
   }
 };
->>>>>>> adan
 
 const LoginScreen = ({ navigation }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-<<<<<<< HEAD
-
-  const handleLogin = () => {
-    if (username.trim() && password.trim()) {
-      console.log('Iniciar sesión con:', username, password);
-      navigation.navigate('Home');
-    } else {
-=======
   const [isLoading, setIsLoading] = useState(false);
 
   const isValidEmail = (email) => {
@@ -44,19 +33,11 @@ const LoginScreen = ({ navigation }) => {
 
   const handleLogin = async () => {
     if (!username.trim() || !password.trim()) {
->>>>>>> adan
       Alert.alert(
         'Campos vacíos',
         'Por favor ingresa usuario y contraseña',
         [{ text: 'OK' }]
       );
-<<<<<<< HEAD
-    }
-  };
-
-  const handleForgotPassword = () => {
-    navigation.navigate('PasswordScreen'); 
-=======
       return;
     }
 
@@ -173,7 +154,6 @@ const LoginScreen = ({ navigation }) => {
 
   const handleForgotPassword = () => {
     navigation.navigate('PasswordScreen');
->>>>>>> adan
   };
 
   const handleGoBack = () => {
@@ -184,8 +164,6 @@ const LoginScreen = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-<<<<<<< HEAD
-=======
       {/* Spinner de carga */}
       <Spinner
         visible={isLoading}
@@ -194,7 +172,6 @@ const LoginScreen = ({ navigation }) => {
         overlayColor="rgba(0, 0, 0, 0.7)"
       />
 
->>>>>>> adan
       <Image source={require('../assets/login-wave.png')} style={styles.wavesTop} />
 
       <TouchableOpacity onPress={handleGoBack} style={styles.backButton}>
@@ -203,28 +180,17 @@ const LoginScreen = ({ navigation }) => {
 
       <View style={styles.headerContainer}>
         <Text style={styles.title}>¡Bienvenido!</Text>
-<<<<<<< HEAD
-
-=======
->>>>>>> adan
         <Image source={require('../assets/login-avatar.png')} style={styles.avatar} />
       </View>
 
       <TextInput
         style={styles.input}
-<<<<<<< HEAD
-        placeholder="Usuario"
-        value={username}
-        onChangeText={setUsername}
-        autoCapitalize="none"
-=======
         placeholder="Correo electrónico"
         value={username}
         onChangeText={setUsername}
         autoCapitalize="none"
         keyboardType="email-address"
         editable={!isLoading}
->>>>>>> adan
       />
 
       <TextInput
@@ -233,18 +199,6 @@ const LoginScreen = ({ navigation }) => {
         value={password}
         onChangeText={setPassword}
         secureTextEntry
-<<<<<<< HEAD
-      />
-
-      <TouchableOpacity onPress={handleForgotPassword}>
-        <Text style={styles.forgotPasswordText}>¿Olvidé mi contraseña?</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity 
-        onPress={handleLogin} 
-        style={styles.buttonContainer}
-        activeOpacity={0.7}
-=======
         editable={!isLoading}
       />
 
@@ -257,20 +211,15 @@ const LoginScreen = ({ navigation }) => {
         style={[styles.buttonContainer, isLoading && styles.buttonDisabled]}
         activeOpacity={0.7}
         disabled={isLoading}
->>>>>>> adan
       >
         <ImageBackground
           source={require('../assets/button-bg-1.png')}
           style={styles.buttonBackground}
           resizeMode="cover"
         >
-<<<<<<< HEAD
-          <Text style={styles.buttonText}>Iniciar Sesión</Text>
-=======
           <Text style={styles.buttonText}>
             {isLoading ? 'Iniciando...' : 'Iniciar Sesión'}
           </Text>
->>>>>>> adan
         </ImageBackground>
       </TouchableOpacity>
 
@@ -281,18 +230,6 @@ const LoginScreen = ({ navigation }) => {
       </View>
 
       <View style={styles.socialIconsContainer}>
-<<<<<<< HEAD
-        <TouchableOpacity style={styles.socialIcon}>
-          <Image source={require('../assets/google-icon.png')} style={styles.socialIconImage} />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.socialIcon}>
-          <Image source={require('../assets/facebook-icon.png')} style={styles.socialIconImage} />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.socialIcon}>
-          <Image source={require('../assets/twitter-icon.png')} style={styles.socialIconImage} />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.socialIcon}>
-=======
         <TouchableOpacity
           style={styles.socialIcon}
         >
@@ -305,7 +242,6 @@ const LoginScreen = ({ navigation }) => {
           <Image source={require('../assets/twitter-icon.png')} style={styles.socialIconImage} />
         </TouchableOpacity>
         <TouchableOpacity style={styles.socialIcon} disabled={isLoading}>
->>>>>>> adan
           <Image source={require('../assets/apple-icon.png')} style={styles.socialIconImage} />
         </TouchableOpacity>
       </View>
@@ -322,13 +258,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#ffffff',
   },
-<<<<<<< HEAD
-=======
   spinnerTextStyle: {
     color: '#FFFFFF',
     fontWeight: 'bold',
   },
->>>>>>> adan
   wavesTop: {
     position: 'absolute',
     top: 0,
@@ -379,12 +312,9 @@ const styles = StyleSheet.create({
     height: 70,
     marginBottom: 16,
   },
-<<<<<<< HEAD
-=======
   buttonDisabled: {
     opacity: 0.7,
   },
->>>>>>> adan
   buttonBackground: {
     width: '100%',
     height: '100%',

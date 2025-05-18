@@ -1,13 +1,7 @@
-<<<<<<< HEAD
-import React from 'react';
-import { NavigationContainer } from '@react-navigation/native';
-import { createStackNavigator } from '@react-navigation/stack';
-=======
 import React, { useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { LogBox, View, Text, StyleSheet, TouchableOpacity } from 'react-native';
->>>>>>> adan
 import SplashScreen from './screens/SplashScreen';
 import WelcomeScreen from './screens/WelcomeScreen';
 import LoginScreen from './screens/LoginScreen';
@@ -34,45 +28,6 @@ import ProfileScreen from './screens/ProfileScreen';
 import HelpScreen from './screens/HelpScreen';
 import Codigo from './screens/Codigo';
 
-<<<<<<< HEAD
-const Stack = createStackNavigator();
-
-const App = () => {
-  return (
-    <NavigationContainer>
-      <Stack.Navigator initialRouteName="Splash" screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="Splash" component={SplashScreen} />
-        <Stack.Screen name="Welcome" component={WelcomeScreen} />
-        <Stack.Screen name="Login" component={LoginScreen} />
-        <Stack.Screen name="SignUp" component={SignUpScreen} />
-        <Stack.Screen name="Home" component={HomeScreen} />
-        <Stack.Screen name="PasswordScreen" component={PasswordScreen} />
-        <Stack.Screen name="MailScreen" component={MailScreen} />
-        <Stack.Screen name="PasswordSuccessScreen" component={PasswordSuccessScreen} />
-        <Stack.Screen name="CoursesScreen" component={CoursesScreen} />
-        <Stack.Screen name="PythonIntro" component={PythonIntroScreen} />
-        <Stack.Screen name="PythonTheoryScreen" component={PythonTheoryScreen} />
-        <Stack.Screen name="HTMLIntroScreen" component={HTMLIntroScreen} />
-        <Stack.Screen name="JavaIntroScreen" component={JavaIntroScreen} />
-        <Stack.Screen name="SwiftIntroScreen" component={SwiftIntroScreen} />
-        <Stack.Screen name="HTMLTheoryScreen" component={HTMLTheoryScreen} />
-        <Stack.Screen name="JavaTheoryScreen" component={JavaTheoryScreen} />
-        <Stack.Screen name="SwiftTheoryScreen" component={SwiftTheoryScreen} />
-        <Stack.Screen name="PythonExercises" component={PythonExercisesScreen} />
-        <Stack.Screen name="JavaExercisesScreen" component={JavaExercisesScreen} />
-        <Stack.Screen name="HTMLExercisesScreen" component={HTMLExercisesScreen} />
-        <Stack.Screen name="SwiftExercisesScreen" component={SwiftExercisesScreen} />
-        <Stack.Screen name="SQLTheoryScreen" component={SQLTheoryScreen} />
-        <Stack.Screen name="ProfileScreen" component={ProfileScreen} />
-        <Stack.Screen name="HelpScreen" component={HelpScreen} />
-        <Stack.Screen name="Codigo" component={Codigo} />
-      </Stack.Navigator>
-    </NavigationContainer>
-  );
-};
-
-export default App;
-=======
 
 LogBox.ignoreAllLogs();
 
@@ -222,4 +177,3 @@ const styles = StyleSheet.create({
 });
 
 export default App;
->>>>>>> adan

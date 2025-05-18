@@ -1,53 +1,32 @@
 {
   "expo": {
     "name": "ProgPractice",
-<<<<<<< HEAD
-    "slug": "ProgPractice",
-    "version": "1.0.0",
-=======
     "slug": "progpractice",
     "scheme": "progpractice",
     "version": "1.0.0",
     "SdkVersion": "50.0.0",
->>>>>>> adan
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
-<<<<<<< HEAD
-=======
     "owner": "adanruan27",
->>>>>>> adan
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
     "ios": {
-<<<<<<< HEAD
-      "supportsTablet": true
-    },
-    "android": {
-      "adaptiveIcon": {
-=======
       "supportsTablet": true,
       "bundleIdentifier": "com.progpractice.app"
     },
     "android": {
       "package": "com.progpractice.app",
       "adaptiveIcon": { 
->>>>>>> adan
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       }
     },
     "web": {
-<<<<<<< HEAD
-      "favicon": "./assets/favicon.png"
-    }
-  }
-}
-=======
       "favicon": "./assets/favicon.png",
       "bundler": "metro"
     },
@@ -61,4 +40,3 @@
     }
   }
 }
->>>>>>> adan

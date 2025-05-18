@@ -1,9 +1,3 @@
-<<<<<<< HEAD
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, ScrollView, Modal } from 'react-native';
-
-import Icon from 'react-native-vector-icons/Ionicons';
-=======
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, ScrollView, Modal, Alert, ActivityIndicator } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -11,7 +5,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { auth, db, storage } from '../services/firebase';
 import * as ImagePicker from 'expo-image-picker';
 import Spinner from 'react-native-loading-spinner-overlay';
->>>>>>> adan
 
 const ProfileScreen = ({ navigation }) => {
   const [username, setUsername] = useState('');
@@ -19,8 +12,6 @@ const ProfileScreen = ({ navigation }) => {
   const [bio, setBio] = useState('');
   const [country, setCountry] = useState('El Salvador');
   const [isMenuVisible, setIsMenuVisible] = useState(false);
-<<<<<<< HEAD
-=======
   const [userId, setUserId] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [profileImage, setProfileImage] = useState(null);
@@ -339,7 +330,6 @@ const syncUserData = async (imageUrl) => {
     setIsLoading(false);
   }
 };
->>>>>>> adan
 
   const toggleMenu = () => {
     setIsMenuVisible(!isMenuVisible);
@@ -350,13 +340,6 @@ const syncUserData = async (imageUrl) => {
     navigation.navigate(screen);
   };
 
-<<<<<<< HEAD
-  return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <View style={styles.searchContainer}>
-          <Icon name="search" size={20} color="#FFFFFF" style={styles.searchIcon}/>
-=======
   const handleLogout = async () => {
     try {
       await auth.signOut();
@@ -373,7 +356,6 @@ const syncUserData = async (imageUrl) => {
       <View style={styles.header}>
         <View style={styles.searchContainer}>
           <Icon name="search" size={20} color="#FFFFFF" style={styles.searchIcon} />
->>>>>>> adan
           <TextInput
             placeholder="Buscar..."
             placeholderTextColor="#FFFFFF"
@@ -405,12 +387,9 @@ const syncUserData = async (imageUrl) => {
             <TouchableOpacity style={styles.menuItem} onPress={() => navigateTo('HelpScreen')}>
               <Text style={styles.menuItemText}>Ayuda</Text>
             </TouchableOpacity>
-<<<<<<< HEAD
-=======
             <TouchableOpacity style={[styles.menuItem, { borderBottomWidth: 0 }]} onPress={handleLogout}>
               <Text style={[styles.menuItemText, { color: '#FF3B30' }]}>Cerrar sesión</Text>
             </TouchableOpacity>
->>>>>>> adan
           </View>
         </View>
       </Modal>
@@ -418,12 +397,6 @@ const syncUserData = async (imageUrl) => {
       <ScrollView style={styles.scrollContainer}>
         <Text style={styles.title}>INFORMACIÓN PERSONAL</Text>
 
-<<<<<<< HEAD
-        <View style={styles.profileContainer}>
-          <Image source={require('../assets/usuario.png')} style={styles.profileImage} />
-          <TouchableOpacity style={styles.changeButton}>
-            <Text style={styles.changeText}>Cambiar</Text>
-=======
         {/* Sección de imagen de perfil con progreso */}
         <View style={styles.profileContainer}>
           {imageUploading ? (
@@ -441,17 +414,12 @@ const syncUserData = async (imageUrl) => {
           )}
           <TouchableOpacity style={styles.changeButton} onPress={pickImage} disabled={imageUploading}>
             <Text style={styles.changeText}>{imageUploading ? 'Subiendo...' : 'Cambiar foto'}</Text>
->>>>>>> adan
           </TouchableOpacity>
         </View>
 
         <View style={styles.formContainer}>
           <Text style={styles.label}>Nombre de usuario</Text>
-<<<<<<< HEAD
-          <TextInput 
-=======
           <TextInput
->>>>>>> adan
             style={styles.input}
             placeholder="Tu nombre"
             value={username}
@@ -459,29 +427,17 @@ const syncUserData = async (imageUrl) => {
           />
 
           <Text style={styles.label}>Dirección de correo electrónico</Text>
-<<<<<<< HEAD
-          <TextInput 
-            style={styles.input}
-=======
           <TextInput
             style={[styles.input, { backgroundColor: '#E5E5E5' }]}
->>>>>>> adan
             placeholder="correo@example.com"
             value={email}
             onChangeText={setEmail}
             keyboardType="email-address"
-<<<<<<< HEAD
-          />
-
-          <Text style={styles.label}>Biografía</Text>
-          <TextInput 
-=======
             editable={false}
           />
 
           <Text style={styles.label}>Biografía</Text>
           <TextInput
->>>>>>> adan
             style={[styles.input, styles.bioInput]}
             placeholder="Descríbete..."
             value={bio}
@@ -490,16 +446,6 @@ const syncUserData = async (imageUrl) => {
           />
 
           <Text style={styles.label}>País</Text>
-<<<<<<< HEAD
-          <TextInput 
-            style={styles.input}
-            value={country}
-            editable={false} 
-          />
-
-          <TouchableOpacity style={styles.saveButton}>
-            <Text style={styles.saveText}>Guardar</Text>
-=======
           <TextInput
             style={[styles.input, { backgroundColor: '#E5E5E5' }]}
             value={country}
@@ -514,32 +460,21 @@ const syncUserData = async (imageUrl) => {
             <Text style={styles.saveText}>
               {isLoading ? 'Guardando...' : 'Guardar'}
             </Text>
->>>>>>> adan
           </TouchableOpacity>
         </View>
       </ScrollView>
 
       <View style={styles.navBar}>
-<<<<<<< HEAD
-      <TouchableOpacity 
-          style={styles.navButton} 
-=======
         <TouchableOpacity
           style={styles.navButton}
->>>>>>> adan
           onPress={() => navigation.navigate('Home')}
         >
           <Icon name="home" size={28} color="#B297F1" />
           <Text style={styles.navText}>Inicio</Text>
         </TouchableOpacity>
 
-<<<<<<< HEAD
-        <TouchableOpacity 
-          style={styles.navButton} 
-=======
         <TouchableOpacity
           style={styles.navButton}
->>>>>>> adan
           onPress={() => navigation.navigate('ProfileScreen')}
         >
           <Icon name="person" size={28} color="#B297F1" />
@@ -585,8 +520,6 @@ const styles = StyleSheet.create({
   menuButton: {
     marginLeft: 10,
   },
-<<<<<<< HEAD
-=======
   loadingContainer: {
     width: 80,
     height: 80,
@@ -601,7 +534,6 @@ const styles = StyleSheet.create({
     color: '#B297F1',
     fontWeight: 'bold',
   },
->>>>>>> adan
   menuOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
@@ -649,10 +581,7 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-<<<<<<< HEAD
-=======
     backgroundColor: '#F5F5F5',
->>>>>>> adan
   },
   changeButton: {
     backgroundColor: '#B297F1',
@@ -668,10 +597,7 @@ const styles = StyleSheet.create({
   },
   formContainer: {
     paddingHorizontal: 20,
-<<<<<<< HEAD
-=======
     paddingBottom: 30,
->>>>>>> adan
   },
   label: {
     fontSize: 16,
@@ -695,10 +621,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderRadius: 10,
     alignItems: 'center',
-<<<<<<< HEAD
-=======
     marginTop: 10,
->>>>>>> adan
   },
   saveText: {
     color: '#FFFFFF',
