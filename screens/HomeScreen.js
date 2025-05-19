@@ -1,53 +1,69 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Image, ScrollView, Modal, Alert } from 'react-native';
-import Icon from 'react-native-vector-icons/Ionicons';
+import React, { useState, useEffect, useContext } from 'react';
+import {
+  View,
+  Text,
+  ScrollView,
+  StyleSheet,
+  Image,
+  TouchableOpacity,
+  Modal,
+  Alert,
+} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { auth, db } from '../services/firebase'; // Asegúrate de importar db también
+import Icon from 'react-native-vector-icons/Ionicons';
+import { auth, db } from '../services/firebase';
+import { GamificationContext } from '../context/GamificationContext';
+import LivesDisplay from '../components/LivesDisplay';
+import StreakTracker from '../components/StreakTracker';
+import AchievementCard from '../components/AchievementCard';
 
 const HomeScreen = ({ navigation }) => {
   const [isMenuVisible, setIsMenuVisible] = useState(false);
   const [userData, setUserData] = useState(null);
+  const { 
+    xp, 
+    lives, 
+    streak, 
+    achievements, 
+    achievementsInfo, 
+    loadingProgress 
+  } = useContext(GamificationContext);
 
   // Cargar datos del usuario al montar el componente
   useEffect(() => {
     const getUserData = async () => {
       try {
-        console.log('Verificando datos en AsyncStorage...');
+        // Primero intentar desde AsyncStorage
         const storedUserData = await AsyncStorage.getItem('userData');
-
+        
         if (storedUserData) {
           const parsedUserData = JSON.parse(storedUserData);
-          console.log('Datos encontrados en AsyncStorage:', parsedUserData);
           setUserData(parsedUserData);
-        } else {
-          console.log('No hay datos en AsyncStorage');
-          const currentUser = auth.currentUser;
-
-          if (currentUser) {
-            console.log('Usuario autenticado en Firebase, obteniendo datos de Firestore');
-            const userDoc = await db.collection('users').doc(currentUser.uid).get();
-
-            if (userDoc.exists) {
-              const firestoreData = userDoc.data();
-              const userData = {
-                uid: currentUser.uid,
-                email: currentUser.email,
-                nombre: firestoreData.nombre,
-                apellido: firestoreData.apellido,
-                score: firestoreData.score || 0
-              };
-
-              await AsyncStorage.setItem('userData', JSON.stringify(userData));
-              setUserData(userData);
-            } else {
-              console.log('No hay datos en Firestore');
-              Alert.alert('Sesión expirada', 'Por favor inicia sesión nuevamente');
-              navigation.navigate('Login');
-            }
-          } else {
-            console.log('Usuario no autenticado');
-            Alert.alert('Sesión expirada', 'Por favor inicia sesión nuevamente');
-            navigation.navigate('Login');
+        }
+        
+        // Luego obtener datos actualizados de Firebase (si está autenticado)
+        const currentUser = auth.currentUser;
+        if (currentUser) {
+          const userDoc = await db.collection('users').doc(currentUser.uid).get();
+          
+          if (userDoc.exists) {
+            const firebaseUserData = userDoc.data();
+            
+            // Crear objeto unificado con todos los datos relevantes
+            const completeUserData = {
+              nombre: firebaseUserData.nombre || (firebaseUserData.profile?.nombre) || 'Usuario',
+              email: currentUser.email,
+              profileImage: firebaseUserData.profileImage || '',
+              // Datos de gamificación
+              score: firebaseUserData.gamification?.xp || 0,
+              level: firebaseUserData.gamification?.level || 1
+            };
+            
+            // Actualizar estado
+            setUserData(completeUserData);
+            
+            // Actualizar también en AsyncStorage para la próxima vez
+            await AsyncStorage.setItem('userData', JSON.stringify(completeUserData));
           }
         }
       } catch (error) {
@@ -56,6 +72,17 @@ const HomeScreen = ({ navigation }) => {
     };
 
     getUserData();
+    
+    // También actualizar cuando cambie el usuario autenticado
+    const unsubscribe = auth.onAuthStateChanged(user => {
+      if (user) {
+        getUserData();
+      } else {
+        setUserData(null);
+      }
+    });
+    
+    return () => unsubscribe();
   }, []);
 
   const toggleMenu = () => {
@@ -78,14 +105,12 @@ const HomeScreen = ({ navigation }) => {
     }
   };
 
-
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.spacer} />
+      
       {/* Encabezado con avatar y nombre */}
-
       <View style={styles.header}>
-
         <Image
           source={
             userData && userData.profileImage
@@ -130,26 +155,52 @@ const HomeScreen = ({ navigation }) => {
         </View>
       </Modal>
 
-      <View style={styles.progressContainer}>
-        <Text style={styles.progressText}>Tu progreso en programación</Text>
-        <View style={styles.progressBar}>
-          <View style={[styles.progressFill, { width: '30%' }]} />
+      {/* Sección de gamificación */}
+      <View style={styles.gamificationContainer}>
+        <View style={styles.gamificationHeader}>
+          {/* Mostrar XP y nivel */}
+          <View style={styles.xpContainer}>
+            <Icon name="star" size={24} color="#FFD700" />
+            <View style={styles.xpInfo}>
+              <Text style={styles.xpText}>{xp} puntos</Text>
+              <Text style={styles.xpLevel}>Nivel {userData ? userData.level : 1}</Text>
+            </View>
+          </View>
+          <StreakTracker />
         </View>
-        <Text style={styles.percentageText}>30% completado</Text>
+        
+        <LivesDisplay />
       </View>
 
-      <View style={styles.statsContainer}>
-        <View style={styles.statItem}>
-          <Icon name="star" size={24} color="#FFD700" />
-          <Text style={styles.statsText}>{userData ? `${userData.score}` : '0'} puntos</Text>
-        </View>
-        <View style={styles.statItem}>
-          <Icon name="trophy" size={24} color="#FF5733" />
-          <Text style={styles.statsText}>5 logros</Text>
-        </View>
+      {/* Logros recientes */}
+      <Text style={styles.sectionTitle}>Logros recientes</Text>
+      <View style={styles.achievementsContainer}>
+        {loadingProgress ? (
+          <Text style={styles.loadingText}>Cargando logros...</Text>
+        ) : achievements && achievements.length > 0 ? (
+          achievements.slice(0, 3).map((achievement, index) => {
+            const achievementInfo = achievementsInfo?.find(a => a.id === achievement.id);
+            if (!achievementInfo) return null;
+            
+            return (
+              <AchievementCard
+                key={index}
+                achievement={achievementInfo}
+                earnedAt={achievement.earnedAt}
+              />
+            );
+          })
+        ) : (
+          <Text style={styles.emptyText}>Aún no has desbloqueado logros</Text>
+        )}
+        
+        <TouchableOpacity 
+          style={styles.viewAllButton}
+          onPress={() => navigation.navigate('AchievementsScreen')}
+        >
+          <Text style={styles.viewAllText}>Ver todos los logros</Text>
+        </TouchableOpacity>
       </View>
-
-      {/* Resto del código igual... */}
 
       <Text style={styles.sectionTitle}>Cursos en progreso</Text>
       <View style={styles.courseList}>
@@ -243,33 +294,39 @@ const styles = StyleSheet.create({
     color: '#052659',
     fontWeight: 'bold',
   },
-  progressContainer: {
-    backgroundColor: '#E8F4FF',
-    padding: 15,
-    borderRadius: 10,
+  
+  // Nueva sección de gamificación
+  gamificationContainer: {
     marginBottom: 20,
   },
-  progressText: {
-    fontSize: 16,
-    color: '#052659',
+  gamificationHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     marginBottom: 10,
   },
-  progressBar: {
-    width: '100%',
-    height: 10,
-    backgroundColor: '#C1E8FF',
-    borderRadius: 5,
-    overflow: 'hidden',
+  xpContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFF8E1',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 20,
   },
-  progressFill: {
-    height: '100%',
-    backgroundColor: '#3A86FF',
+  xpInfo: {
+    marginLeft: 8,
   },
-  percentageText: {
+  xpText: {
+    marginLeft: 5,
     fontSize: 14,
-    color: '#052659',
-    marginTop: 5,
+    fontWeight: 'bold',
+    color: '#FFC107',
   },
+  xpLevel: {
+    fontSize: 12,
+    color: '#FFA500',
+    marginTop: 2,
+  },
+  
   statsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -288,6 +345,47 @@ const styles = StyleSheet.create({
     color: '#052659',
     marginLeft: 10,
   },
+  statsItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F5F5F5',
+    borderRadius: 10,
+    padding: 10,
+    marginBottom: 10,
+  },
+  statsInfo: {
+    marginLeft: 10,
+  },
+  statsLabel: {
+    fontSize: 14,
+    color: '#777',
+  },
+  statsValue: {
+    fontSize: 16,
+    color: '#052659',
+    fontWeight: 'bold',
+  },
+  
+  // Sección de logros
+  achievementsContainer: {
+    marginBottom: 20,
+  },
+  loadingText: {
+    textAlign: 'center',
+    color: '#999',
+    fontStyle: 'italic',
+    padding: 10,
+  },
+  viewAllButton: {
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  viewAllText: {
+    color: '#B297F1',
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+  
   sectionTitle: {
     fontSize: 20,
     fontWeight: 'bold',
@@ -325,6 +423,12 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 18,
     fontWeight: 'bold',
+  },
+  emptyText: {
+    textAlign: 'center',
+    fontStyle: 'italic',
+    color: '#999',
+    padding: 20,
   },
 });
 

@@ -27,7 +27,15 @@ import SQLTheoryScreen from './screens/SQLTheoryScreen';
 import ProfileScreen from './screens/ProfileScreen';
 import HelpScreen from './screens/HelpScreen';
 import Codigo from './screens/Codigo';
-
+import { initializeCoursesData } from './services/initCourseData';
+import CourseIntroScreen from './screens/CourseIntroScreen';
+import CourseTheoryScreen from './screens/CourseTheoryScreen';
+import CourseExercisesScreen from './screens/CourseExercisesScreen';
+import CourseLessonsListScreen from './screens/CourseLessonsListScreen'; // Importa la nueva pantalla
+import { GamificationProvider } from './context/GamificationContext';
+import AchievementsScreen from './screens/AchievementsScreen';
+import { checkDailyReset } from './services/dailyResetService';
+import { auth } from './services/firebase';
 
 LogBox.ignoreAllLogs();
 
@@ -93,6 +101,10 @@ const Stack = createStackNavigator();
 
 const App = () => {
   useEffect(() => {
+    // Inicializa los datos de cursos si no existen
+    initializeCoursesData().catch(err => 
+      console.error('Error al inicializar datos de cursos:', err)
+    );
     
     if (__DEV__) {
       LogBox.ignoreLogs([
@@ -104,37 +116,57 @@ const App = () => {
     }
   }, []);
 
+  useEffect(() => {
+    // Verificar el reseteo diario cuando hay un usuario autenticado
+    const unsubscribe = auth.onAuthStateChanged(user => {
+      if (user) {
+        checkDailyReset(user.uid);
+      }
+    });
+    
+    return () => unsubscribe();
+  }, []);
+
   return (
     <ErrorBoundary>
-      <NavigationContainer>
-        <Stack.Navigator initialRouteName="Splash" screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="Splash" component={SplashScreen} />
-          <Stack.Screen name="Welcome" component={WelcomeScreen} />
-          <Stack.Screen name="Login" component={LoginScreen} />
-          <Stack.Screen name="SignUp" component={SignUpScreen} />
-          <Stack.Screen name="Home" component={HomeScreen} />
-          <Stack.Screen name="PasswordScreen" component={PasswordScreen} />
-          <Stack.Screen name="MailScreen" component={MailScreen} />
-          <Stack.Screen name="PasswordSuccessScreen" component={PasswordSuccessScreen} />
-          <Stack.Screen name="CoursesScreen" component={CoursesScreen} />
-          <Stack.Screen name="PythonIntro" component={PythonIntroScreen} />
-          <Stack.Screen name="PythonTheoryScreen" component={PythonTheoryScreen} />
-          <Stack.Screen name="HTMLIntroScreen" component={HTMLIntroScreen} />
-          <Stack.Screen name="JavaIntroScreen" component={JavaIntroScreen} />
-          <Stack.Screen name="SwiftIntroScreen" component={SwiftIntroScreen} />
-          <Stack.Screen name="HTMLTheoryScreen" component={HTMLTheoryScreen} />
-          <Stack.Screen name="JavaTheoryScreen" component={JavaTheoryScreen} />
-          <Stack.Screen name="SwiftTheoryScreen" component={SwiftTheoryScreen} />
-          <Stack.Screen name="PythonExercises" component={PythonExercisesScreen} />
-          <Stack.Screen name="JavaExercisesScreen" component={JavaExercisesScreen} />
-          <Stack.Screen name="HTMLExercisesScreen" component={HTMLExercisesScreen} />
-          <Stack.Screen name="SwiftExercisesScreen" component={SwiftExercisesScreen} />
-          <Stack.Screen name="SQLTheoryScreen" component={SQLTheoryScreen} />
-          <Stack.Screen name="ProfileScreen" component={ProfileScreen} />
-          <Stack.Screen name="HelpScreen" component={HelpScreen} />
-          <Stack.Screen name="Codigo" component={Codigo} />
-        </Stack.Navigator>
-      </NavigationContainer>
+      <GamificationProvider>
+        <NavigationContainer>
+          <Stack.Navigator initialRouteName="Splash" screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="Splash" component={SplashScreen} />
+            <Stack.Screen name="Welcome" component={WelcomeScreen} />
+            <Stack.Screen name="Login" component={LoginScreen} />
+            <Stack.Screen name="SignUp" component={SignUpScreen} />
+            <Stack.Screen name="Home" component={HomeScreen} />
+            <Stack.Screen name="PasswordScreen" component={PasswordScreen} />
+            <Stack.Screen name="MailScreen" component={MailScreen} />
+            <Stack.Screen name="PasswordSuccessScreen" component={PasswordSuccessScreen} />
+            <Stack.Screen name="CoursesScreen" component={CoursesScreen} />
+            
+            {/* Pantallas genéricas de cursos */}
+            <Stack.Screen name="CourseLessonsListScreen" component={CourseLessonsListScreen} />
+            <Stack.Screen name="CourseIntroScreen" component={CourseIntroScreen} />
+            <Stack.Screen name="CourseTheoryScreen" component={CourseTheoryScreen} />
+            <Stack.Screen name="CourseExercisesScreen" component={CourseExercisesScreen} />
+            
+            {/* Pantallas específicas (temporalmente mantenidas) */}
+            <Stack.Screen name="PythonIntro" component={CourseIntroScreen} initialParams={{ courseId: 'python' }} />
+            <Stack.Screen name="JavaIntroScreen" component={CourseIntroScreen} initialParams={{ courseId: 'java' }} />
+            <Stack.Screen name="SwiftIntroScreen" component={SwiftIntroScreen} />
+            <Stack.Screen name="HTMLIntroScreen" component={HTMLIntroScreen} />
+            <Stack.Screen name="JavaTheoryScreen" component={JavaTheoryScreen} />
+            <Stack.Screen name="SwiftTheoryScreen" component={SwiftTheoryScreen} />
+            <Stack.Screen name="PythonExercises" component={PythonExercisesScreen} />
+            <Stack.Screen name="JavaExercisesScreen" component={JavaExercisesScreen} />
+            <Stack.Screen name="HTMLExercisesScreen" component={HTMLExercisesScreen} />
+            <Stack.Screen name="SwiftExercisesScreen" component={SwiftExercisesScreen} />
+            <Stack.Screen name="SQLTheoryScreen" component={SQLTheoryScreen} />
+            <Stack.Screen name="ProfileScreen" component={ProfileScreen} />
+            <Stack.Screen name="HelpScreen" component={HelpScreen} />
+            <Stack.Screen name="Codigo" component={Codigo} />
+            <Stack.Screen name="AchievementsScreen" component={AchievementsScreen} />
+          </Stack.Navigator>
+        </NavigationContainer>
+      </GamificationProvider>
     </ErrorBoundary>
   );
 };

@@ -7,6 +7,7 @@ import { auth, db, firebaseTimestamp } from '../services/firebase';
 import NetInfo from '@react-native-community/netinfo';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Spinner from 'react-native-loading-spinner-overlay';
+import gamificationService from '../services/gamificationService'; // Asegúrate de importar el servicio de gamificación
 
 const SignUpScreen = ({ navigation }) => {
   const [name, setName] = useState('');
@@ -136,11 +137,15 @@ const SignUpScreen = ({ navigation }) => {
       await db.collection('users').doc(uid).set({
         nombre: name + " " + lastName,
         email: email,
-        score: 0,
-        achievements: [],
-        completedChallenges: [],
+        profileImage: '',
         createdAt: firebaseTimestamp()
       });
+
+      // Inicializar gamificación para el nuevo usuario
+      await gamificationService.initGamification(uid);
+
+      // Desbloquear logro de primer inicio de sesión
+      await gamificationService.unlockAchievement(uid, 'first_login');
 
       await AsyncStorage.setItem('userData', JSON.stringify({
         uid,
