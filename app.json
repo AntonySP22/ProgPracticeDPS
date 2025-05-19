@@ -2,41 +2,33 @@
   "expo": {
     "name": "ProgPractice",
     "slug": "progpractice",
-    "scheme": "progpractice",
     "version": "1.0.0",
-    "SdkVersion": "50.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
-    "newArchEnabled": true,
-    "owner": "adanruan27",
     "splash": {
-      "image": "./assets/splash-icon.png",
+      "image": "./assets/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#B297F1"
     },
-    "ios": {
-      "supportsTablet": true,
-      "bundleIdentifier": "com.progpractice.app"
+    "updates": {
+      "fallbackToCacheTimeout": 0
     },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "android": {
-      "package": "com.progpractice.app",
-      "adaptiveIcon": { 
+      "package": "com.elmerpractice.progpractice",
+      "versionCode": 1,
+      "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#B297F1"
       }
     },
-    "web": {
-      "favicon": "./assets/favicon.png",
-      "bundler": "metro"
-    },
-    "plugins": [
-      "expo-web-browser"
-    ],
     "extra": {
       "eas": {
-        "projectId": "progpractice-b4a2a"
+        "projectId": "e23f5dd3-65ac-4346-990d-f3a68796c746"
       }
-    }
+    },
+    "owner": "antontsp22"
   }
 }
