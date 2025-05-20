@@ -95,17 +95,15 @@ const CourseLessonsListScreen = ({ navigation, route }) => {
     }
   };
 
+  // Update the renderLessonItem function to check lesson completion status properly
   const renderLessonItem = ({ item, index }) => {
-    // Verificar si esta lección está completada
+    // Check if this lesson is completed - simplified logic for clarity
     const isLessonCompleted = userProgress?.lessons?.[item.id]?.completed || false;
     const hasTheoryViewed = userProgress?.lessons?.[item.id]?.teoriaVista || false;
     
-    // Verificar si hay ejercicios para esta lección
-    const hasExercises = courseData?.exercises && 
-                       courseData.exercises.some(ex => ex.lessonId === item.id);
-    
-    // Mostrar icono de "en progreso" si ha visto la teoría pero no ha completado los ejercicios
-    const isInProgress = hasTheoryViewed && !isLessonCompleted && hasExercises;
+    // For the progress status, we no longer need to check if all exercises are completed
+    // since we directly mark the lesson as complete when its single exercise is completed
+    const isInProgress = hasTheoryViewed && !isLessonCompleted;
     
     return (
       <TouchableOpacity 

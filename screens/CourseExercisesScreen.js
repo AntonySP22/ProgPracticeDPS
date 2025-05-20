@@ -2,7 +2,8 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity, TextInput, Alert, ActivityIndicator, ScrollView } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
-import { getCourseById } from '../services/courseService';
+import { getCourseById, markLessonComplete } from '../services/courseService';
+import { markExerciseComplete } from '../services/courseService';
 import { GamificationContext } from '../context/GamificationContext';
 import gamificationService from '../services/gamificationService';
 import LivesDisplay from '../components/LivesDisplay';
@@ -158,84 +159,43 @@ const CourseExercisesScreen = ({ navigation, route }) => {
     
     // Validar respuesta
     if (!answer.trim()) {
-      Alert.alert('Respuesta vacía', 'Por favor, ingresa una respuesta antes de continuar.');
+      Alert.alert('Respuesta vacía', 'Por favor, ingresa una respuesta antes de verificar.');
       return;
     }
 
-    // Verificar si este ejercicio ya fue completado anteriormente
-    const userDoc = await db.collection('users').doc(userId).get();
-    const userData = userDoc.exists ? userDoc.data() : {};
-    const exerciseProgress = userData?.progress?.courses?.[courseId]?.exercises?.[currentExercise.id];
-    const isExerciseCompleted = !!exerciseProgress?.completed;
-    
     if (answer.trim().toLowerCase() === currentExercise.correctAnswer.trim().toLowerCase()) {
-      // Respuesta correcta
-      const points = currentExercise.points || 10;
-      
-      try {
-        // Solo otorgar puntos si el ejercicio no estaba completado anteriormente
-        if (!isExerciseCompleted) {
-          // Registrar puntos y progreso
-          await gamificationService.addXp(userId, points);
-          
-          // Marcar el ejercicio como completado
-          await db.collection('users').doc(userId).update({
-            [`progress.courses.${courseId}.exercises.${currentExercise.id}`]: {
-              completed: true,
-              score: 100,
-              completedAt: firebaseTimestamp()
-            },
-            'progress.lastActivity': firebaseTimestamp()
-          });
-          
-          // Verificar si todos los ejercicios de esta lección están completados
-          const allExercisesForThisLesson = exercises.filter(ex => ex.lessonId === lessonId);
-          const completedExercises = allExercisesForThisLesson.filter(ex => {
-            // Verificar si este ejercicio está completado
-            return ex.id === currentExercise.id || // El ejercicio actual que acaba de completar
-                   userData?.progress?.courses?.[courseId]?.exercises?.[ex.id]?.completed;
-          });
-          
-          // Si todos los ejercicios están completados, marcar la lección como completada
-          if (completedExercises.length === allExercisesForThisLesson.length) {
-            await db.collection('users').doc(userId).update({
-              [`progress.courses.${courseId}.lessons.${lessonId}`]: {
-                teoriaVista: true,
-                completed: true,
-                completedAt: firebaseTimestamp()
-              }
-            });
+      // Success! The answer is correct
+      Alert.alert(
+        "¡Correcto!",
+        "Has respondido correctamente.",
+        [{ text: "Continuar", onPress: async () => {
+          try {
+            // Add XP points for the exercise
+            await addXp(currentExercise.points || 10);
+            
+            // This is the important part - mark both exercise and lesson as complete
+            await markLessonComplete(
+              userId, 
+              courseId, 
+              currentExercise.lessonId, 
+              currentExercise.id
+            );
+            
+            // Move to next exercise or complete
+            goToNextExercise();
+          } catch (error) {
+            console.error("Error processing exercise completion:", error);
           }
-          
-          // Actualizar racha y verificar logros
-          await gamificationService.updateStreak(userId, true);
-          await gamificationService.checkExerciseAchievements(userId);
-          
-          // Actualizar UI
-          if (loadUserProgress) {
-            loadUserProgress(userId);
-          }
-          
-          Alert.alert(
-            '¡Correcto!',
-            `Tu respuesta es correcta. +${points} puntos`,
-            [{ text: 'Continuar', onPress: () => goToNextExercise() }]
-          );
-        } else {
-          // Si ya estaba completado, solo mostrar mensaje de éxito sin puntos
-          Alert.alert(
-            '¡Correcto!',
-            'Tu respuesta es correcta. Este ejercicio ya estaba completado.',
-            [{ text: 'Continuar', onPress: () => goToNextExercise() }]
-          );
-        }
-      } catch (error) {
-        console.error('Error al procesar respuesta:', error);
-      }
+        }}]
+      );
     } else {
-      // Respuesta incorrecta
+      // Handle incorrect answer
       decreaseLife();
-      Alert.alert('Incorrecto', 'Intenta otra respuesta. Has perdido una vida.');
+      Alert.alert(
+        "Incorrecto",
+        "Tu respuesta no es correcta. Intenta de nuevo.",
+        [{ text: "Entendido" }]
+      );
     }
   };
 

@@ -57,7 +57,7 @@ export const initializeCoursesData = async () => {
           content: "Python tiene varios tipos de datos integrados que son fundamentales para la programación: enteros (int), flotantes (float), cadenas de texto (str), booleanos (bool), listas (list), tuplas (tuple), conjuntos (set) y diccionarios (dict).",
           codeExample: "# Tipos de datos básicos\nentero = 42          # int\nflotante = 3.14159    # float\ntexto = \"Hola\"       # str\nbooleano = True      # bool\n\n# Tipos de datos compuestos\nlista = [1, 2, 3]     # list\ntupla = (1, 2, 3)     # tuple\nconjunto = {1, 2, 3}  # set\ndiccionario = {'a': 1, 'b': 2}  # dict",
           order: 4
-        }
+        },
       ],
       exercises: [
         {
@@ -69,16 +69,6 @@ export const initializeCoursesData = async () => {
           multiline: false,
           order: 1,
           points: 10
-        },
-        {
-          id: "ex2",
-          lessonId: "sum",
-          title: "Suma de Variables",
-          description: "Se han declarado las siguientes variables: a = 10, b = 3, imprime la suma de alla dos haciendo uso de las variables",
-          correctAnswer: "print(a + b)",
-          multiline: false,
-          order: 2,
-          points: 15
         },
         {
           id: "ex3",
@@ -113,10 +103,20 @@ export const initializeCoursesData = async () => {
               isCorrect: true
             }
           ],
-          order: 3,
+          order: 2,
           points: 20
         },
         {
+          id: "ex2",
+          lessonId: "sum",
+          title: "Suma de Variables",
+          description: "Se han declarado las siguientes variables: a = 10, b = 3, imprime la suma de alla dos haciendo uso de las variables",
+          correctAnswer: "print(a + b)",
+          multiline: false,
+          order: 3,
+          points: 15
+        },
+         {
           id: "ex4",
           lessonId: "data_types",
           title: "Ordenar el código",
@@ -146,7 +146,7 @@ export const initializeCoursesData = async () => {
           ],
           order: 4,
           points: 25
-        }
+        } 
       ]
     });
     

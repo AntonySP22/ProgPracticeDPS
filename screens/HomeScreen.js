@@ -35,15 +35,24 @@ const HomeScreen = ({ navigation }) => {
   useEffect(() => {
     const getUserData = async () => {
       try {
-        // Primero intentar desde AsyncStorage
+        // First check if there's a locally saved profile image
+        const localImageUri = await AsyncStorage.getItem('localProfileImage');
+        
+        // Try to get data from AsyncStorage
         const storedUserData = await AsyncStorage.getItem('userData');
         
         if (storedUserData) {
           const parsedUserData = JSON.parse(storedUserData);
+          
+          // If we have a local image, prioritize it over any stored image
+          if (localImageUri) {
+            parsedUserData.profileImage = localImageUri;
+          }
+          
           setUserData(parsedUserData);
         }
         
-        // Luego obtener datos actualizados de Firebase (si está autenticado)
+        // Then get updated data from Firebase (if authenticated)
         const currentUser = auth.currentUser;
         if (currentUser) {
           const userDoc = await db.collection('users').doc(currentUser.uid).get();
@@ -51,20 +60,21 @@ const HomeScreen = ({ navigation }) => {
           if (userDoc.exists) {
             const firebaseUserData = userDoc.data();
             
-            // Crear objeto unificado con todos los datos relevantes
+            // Create unified object with all relevant data
             const completeUserData = {
               nombre: firebaseUserData.nombre || (firebaseUserData.profile?.nombre) || 'Usuario',
               email: currentUser.email,
-              profileImage: firebaseUserData.profileImage || '',
-              // Datos de gamificación
+              // Use local image if available, otherwise use Firebase image
+              profileImage: localImageUri || firebaseUserData.profileImage || '',
+              // Gamification data
               score: firebaseUserData.gamification?.xp || 0,
               level: firebaseUserData.gamification?.level || 1
             };
             
-            // Actualizar estado
+            // Update state
             setUserData(completeUserData);
             
-            // Actualizar también en AsyncStorage para la próxima vez
+            // Update AsyncStorage for next time (but preserve the local image path)
             await AsyncStorage.setItem('userData', JSON.stringify(completeUserData));
           }
         }
@@ -153,7 +163,7 @@ const HomeScreen = ({ navigation }) => {
           source={
             userData && userData.profileImage
               ? { uri: userData.profileImage } 
-              : require('../assets/usuario.png')
+              : require('../assets/usuario.jpg')
           }
           style={styles.userAvatar}
         />

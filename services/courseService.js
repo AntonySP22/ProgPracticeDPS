@@ -172,3 +172,130 @@ export const getUserCourseProgress = async (userId, courseId) => {
     return null;
   }
 };
+
+// Modificar o añadir esta función para manejar correctamente la finalización de lecciones
+export const markExerciseComplete = async (userId, courseId, lessonId, exerciseId) => {
+  if (!userId) return false;
+  
+  try {
+    // Primero, obtener los datos del curso para encontrar todos los ejercicios de esta lección
+    const courseDoc = await db.collection('courses').doc(courseId).get();
+    if (!courseDoc.exists) {
+      console.error('Curso no encontrado');
+      return false;
+    }
+    
+    const courseData = courseDoc.data();
+    
+    // Encontrar todos los ejercicios para la lección actual
+    const lessonExercises = courseData.exercises.filter(ex => ex.lessonId === lessonId);
+    console.log(`Se encontraron ${lessonExercises.length} ejercicios para la lección ${lessonId}`);
+    
+    // Actualizar el estado de finalización del ejercicio en el progreso del usuario
+    await db.collection('users').doc(userId).set({
+      progress: {
+        courses: {
+          [courseId]: {
+            exercises: {
+              [exerciseId]: {
+                completed: true,
+                completedAt: firebaseTimestamp()
+              }
+            }
+          }
+        }
+      }
+    }, { merge: true });
+    
+    // Obtener el progreso actualizado del usuario para verificar la finalización de la lección
+    const userDoc = await db.collection('users').doc(userId).get();
+    if (!userDoc.exists) return false;
+    
+    const userData = userDoc.data();
+    const userProgress = userData.progress?.courses?.[courseId]?.exercises || {};
+    
+    // Verificar si todos los ejercicios de esta lección están completos
+    const allExercisesCompleted = lessonExercises.every(ex => userProgress[ex.id]?.completed);
+    console.log(`¿Todos los ejercicios completados para la lección ${lessonId}? ${allExercisesCompleted}`);
+    
+    // Si todos los ejercicios están completos, marcar la lección como completada
+    if (allExercisesCompleted) {
+      await db.collection('users').doc(userId).set({
+        progress: {
+          courses: {
+            [courseId]: {
+              lessons: {
+                [lessonId]: {
+                  completed: true,
+                  completedAt: firebaseTimestamp()
+                }
+              }
+            }
+          }
+        }
+      }, { merge: true });
+      
+      console.log(`Lección ${lessonId} marcada como completada`);
+      return true;
+    }
+    
+    return false;
+  } catch (error) {
+    console.error('Error al marcar ejercicio como completo:', error);
+    return false;
+  }
+};
+
+// Marcar lección como completada
+export const markLessonComplete = async (userId, courseId, lessonId, exerciseId) => {
+  if (!userId) return false;
+  
+  try {
+    console.log(`Marking exercise ${exerciseId} and lesson ${lessonId} as complete for user ${userId}`);
+    
+    // Using batch write to update both exercise and lesson atomically
+    const batch = db.batch();
+    const userRef = db.collection('users').doc(userId);
+    
+    // Update exercise completion status
+    batch.set(userRef, {
+      progress: {
+        courses: {
+          [courseId]: {
+            exercises: {
+              [exerciseId]: {
+                completed: true,
+                completedAt: firebaseTimestamp()
+              }
+            }
+          }
+        }
+      }
+    }, { merge: true });
+    
+    // Update lesson completion status
+    batch.set(userRef, {
+      progress: {
+        courses: {
+          [courseId]: {
+            lessons: {
+              [lessonId]: {
+                completed: true,
+                completedAt: firebaseTimestamp()
+              }
+            }
+          }
+        }
+      }
+    }, { merge: true });
+    
+    // Commit the batch
+    await batch.commit();
+    
+    console.log(`Successfully marked lesson ${lessonId} as complete`);
+    return true;
+  } catch (error) {
+    console.error('Error marking lesson complete:', error);
+    return false;
+  }
+};

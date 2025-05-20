@@ -223,28 +223,32 @@ const LoginScreen = ({ navigation }) => {
         </ImageBackground>
       </TouchableOpacity>
 
+      {/* Sección de separación (opcional) */}
       <View style={styles.separator}>
         <View style={styles.separatorLine} />
         <Text style={styles.separatorText}>Iniciar sesión con:</Text>
         <View style={styles.separatorLine} />
       </View>
 
-      <View style={styles.socialIconsContainer}>
-        <TouchableOpacity
-          style={styles.socialIcon}
-        >
-          <Image source={require('../assets/google-icon.png')} style={styles.socialIconImage} />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.socialIcon} disabled={isLoading}>
-          <Image source={require('../assets/facebook-icon.png')} style={styles.socialIconImage} />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.socialIcon} disabled={isLoading}>
-          <Image source={require('../assets/twitter-icon.png')} style={styles.socialIconImage} />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.socialIcon} disabled={isLoading}>
-          <Image source={require('../assets/apple-icon.png')} style={styles.socialIconImage} />
-        </TouchableOpacity>
+      {/* Social login section - REMOVIDO
+      <View style={styles.socialContainer}>
+        <Text style={styles.socialText}>O inicia sesión con:</Text>
+        <View style={styles.socialButtons}>
+          <TouchableOpacity style={styles.socialButton} onPress={handleGoogleLogin}>
+            <Image source={require('../assets/google-icon.png')} style={styles.socialIcon} />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.socialButton} onPress={handleFacebookLogin}>
+            <Image source={require('../assets/facebook-icon.png')} style={styles.socialIcon} />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.socialButton} onPress={handleAppleLogin}>
+            <Image source={require('../assets/apple-icon.png')} style={styles.socialIcon} />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.socialButton} onPress={handleTwitterLogin}>
+            <Image source={require('../assets/twitter-icon.png')} style={styles.socialIcon} />
+          </TouchableOpacity>
+        </View>
       </View>
+      */}
 
       <Image source={require('../assets/waves.png')} style={styles.wavesBottom} />
     </View>
@@ -342,19 +346,28 @@ const styles = StyleSheet.create({
     color: '#666',
     fontSize: 14,
   },
-  socialIconsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
+  socialContainer: {
     width: '80%',
     marginBottom: 0,
+    alignItems: 'center',
   },
-  socialIcon: {
+  socialText: {
+    color: '#666',
+    fontSize: 14,
+    marginBottom: 10,
+  },
+  socialButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    width: '100%',
+  },
+  socialButton: {
     width: 50,
     height: 50,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  socialIconImage: {
+  socialIcon: {
     width: 30,
     height: 30,
   },

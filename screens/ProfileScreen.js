@@ -31,24 +31,29 @@ const ProfileScreen = ({ navigation }) => {
     const loadUserData = async () => {
       try {
         setIsLoading(true);
-        const currentUser = auth.currentUser;
         
-        if (currentUser) {
-          setUserId(currentUser.uid);
-          setEmail(currentUser.email || '');
+        // Check for locally stored image first
+        const localImageUri = await AsyncStorage.getItem('localProfileImage');
+        if (localImageUri) {
+          setProfileImage(localImageUri);
+        }
+        
+        // Get user data from AsyncStorage
+        const storedUserData = await AsyncStorage.getItem('userData');
+        if (storedUserData) {
+          const parsedData = JSON.parse(storedUserData);
+          setUserId(parsedData.uid);
+          setUsername(parsedData.nombre || '');
+          setEmail(parsedData.email || '');
+          setBio(parsedData.bio || '');
           
-          const userDoc = await db.collection('users').doc(currentUser.uid).get();
-          if (userDoc.exists) {
-            const userData = userDoc.data();
-            setUsername(userData.nombre || '');
-            setBio(userData.bio || '');
-            setProfileImage(userData.profileImage || null);
-            setCountry(userData.country || 'El Salvador');
+          // Use the locally stored image if available, otherwise use stored one
+          if (!localImageUri && parsedData.profileImage) {
+            setProfileImage(parsedData.profileImage);
           }
         }
       } catch (error) {
-        console.error('Error cargando datos del usuario:', error);
-        Alert.alert('Error', 'No se pudieron cargar tus datos. Intenta nuevamente.');
+        console.error('Error al cargar datos del usuario:', error);
       } finally {
         setIsLoading(false);
       }
@@ -62,7 +67,7 @@ const ProfileScreen = ({ navigation }) => {
       const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
       
       if (status !== 'granted') {
-        Alert.alert('Permiso denegado', 'Necesitamos permiso para acceder a tus fotos.');
+        Alert.alert('Permiso denegado', 'Se necesita permiso para acceder a la galería');
         return;
       }
       
@@ -70,23 +75,29 @@ const ProfileScreen = ({ navigation }) => {
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsEditing: true,
         aspect: [1, 1],
-        quality: 0.6,
+        quality: 0.7,
       });
       
-      if (!result.canceled && result.assets && result.assets[0]) {
-        const imageUri = result.assets[0].uri;
-        setImageUploading(true);
-        const imageUrl = await uploadImage(imageUri);
-        if (imageUrl) {
-          setProfileImage(imageUrl);
-          await syncUserData(imageUrl);
+      if (!result.canceled && result.assets && result.assets[0].uri) {
+        // Set the image directly to state (for immediate visual feedback)
+        setProfileImage(result.assets[0].uri);
+        
+        // Save the image URI to AsyncStorage
+        await AsyncStorage.setItem('localProfileImage', result.assets[0].uri);
+        
+        // Update local userData with the image path
+        if (userId) {
+          await AsyncStorage.setItem('userData', JSON.stringify({
+            ...(userData || {}),
+            profileImage: result.assets[0].uri
+          }));
         }
-        setImageUploading(false);
+        
+        Alert.alert('Éxito', 'La imagen de perfil ha sido actualizada localmente');
       }
     } catch (error) {
-      console.error('Error seleccionando imagen:', error);
-      Alert.alert('Error', 'No se pudo seleccionar la imagen. Intenta nuevamente.');
-      setImageUploading(false);
+      console.error('Error al seleccionar imagen:', error);
+      Alert.alert('Error', 'No se pudo cambiar la imagen de perfil');
     }
   };
 
@@ -145,31 +156,30 @@ const ProfileScreen = ({ navigation }) => {
 
   const handleSaveProfile = async () => {
     if (!userId) {
-      Alert.alert('Error', 'No se puede guardar el perfil sin iniciar sesión.');
+      Alert.alert('Error', 'No hay usuario conectado');
       return;
     }
     
     try {
       setIsLoading(true);
       
-      await db.collection('users').doc(userId).update({
+      // Update local user data
+      const updatedUserData = {
+        uid: userId,
         nombre: username,
+        email: email,
         bio: bio,
-        country: country,
-      });
+        profileImage: profileImage,
+        country: country
+      };
       
-      // Actualizar AsyncStorage
-      const storedData = await AsyncStorage.getItem('userData');
-      if (storedData) {
-        const userData = JSON.parse(storedData);
-        userData.nombre = username;
-        await AsyncStorage.setItem('userData', JSON.stringify(userData));
-      }
+      // Save to AsyncStorage
+      await AsyncStorage.setItem('userData', JSON.stringify(updatedUserData));
       
-      Alert.alert('Éxito', 'Perfil actualizado correctamente');
+      Alert.alert('Perfil actualizado', 'Tus cambios han sido guardados localmente');
     } catch (error) {
-      console.error('Error guardando perfil:', error);
-      Alert.alert('Error', 'No se pudo guardar el perfil. Intenta nuevamente.');
+      console.error('Error al actualizar perfil:', error);
+      Alert.alert('Error', 'No se pudieron guardar los cambios');
     } finally {
       setIsLoading(false);
     }
@@ -212,7 +222,7 @@ const ProfileScreen = ({ navigation }) => {
             </View>
           ) : (
             <Image
-              source={profileImage ? { uri: profileImage } : require('../assets/usuario.png')}
+              source={profileImage ? { uri: profileImage } : require('../assets/usuario.jpg')}
               style={styles.profileImage}
             />
           )}
