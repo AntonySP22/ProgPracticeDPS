@@ -1,4 +1,3 @@
-// screens/CourseLessonsListScreen.js
 import React, { useState, useEffect, useContext } from 'react';
 import { View, Text, FlatList, StyleSheet, Image, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';

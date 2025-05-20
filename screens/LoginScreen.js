@@ -223,32 +223,11 @@ const LoginScreen = ({ navigation }) => {
         </ImageBackground>
       </TouchableOpacity>
 
-      {/* Sección de separación (opcional) */}
       <View style={styles.separator}>
         <View style={styles.separatorLine} />
         <Text style={styles.separatorText}>Iniciar sesión con:</Text>
         <View style={styles.separatorLine} />
       </View>
-
-      {/* Social login section - REMOVIDO
-      <View style={styles.socialContainer}>
-        <Text style={styles.socialText}>O inicia sesión con:</Text>
-        <View style={styles.socialButtons}>
-          <TouchableOpacity style={styles.socialButton} onPress={handleGoogleLogin}>
-            <Image source={require('../assets/google-icon.png')} style={styles.socialIcon} />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.socialButton} onPress={handleFacebookLogin}>
-            <Image source={require('../assets/facebook-icon.png')} style={styles.socialIcon} />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.socialButton} onPress={handleAppleLogin}>
-            <Image source={require('../assets/apple-icon.png')} style={styles.socialIcon} />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.socialButton} onPress={handleTwitterLogin}>
-            <Image source={require('../assets/twitter-icon.png')} style={styles.socialIcon} />
-          </TouchableOpacity>
-        </View>
-      </View>
-      */}
 
       <Image source={require('../assets/waves.png')} style={styles.wavesBottom} />
     </View>

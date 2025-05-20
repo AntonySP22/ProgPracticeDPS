@@ -1,4 +1,3 @@
-// screens/CourseTheoryScreen.js - Versión actualizada
 import React, { useState, useEffect, useContext } from 'react';
 import { View, Text, ScrollView, StyleSheet, Image, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
