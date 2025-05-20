@@ -1,5 +1,5 @@
 // services/courseService.js
-import { db } from './firebase';
+import { db, firebaseTimestamp } from './firebase';
 
 // Obtener todos los cursos
 export const getAllCourses = async () => {
@@ -15,9 +15,15 @@ export const getAllCourses = async () => {
     const courses = [];
     coursesSnapshot.forEach(doc => {
       const courseData = doc.data();
+      // Convertir Timestamp de Firebase a Date de JavaScript si existe
+      const creationDate = courseData.creationDate ? 
+        courseData.creationDate.toDate() : 
+        new Date(); // Si no tiene fecha, usar fecha actual
+      
       courses.push({
         id: doc.id,
-        ...courseData
+        ...courseData,
+        creationDate: creationDate
       });
     });
     
@@ -29,24 +35,96 @@ export const getAllCourses = async () => {
   }
 };
 
-// Obtener un curso específico por ID
-export const getCourseById = async (courseId) => {
+// Crear o actualizar un curso
+export const saveCourse = async (courseData) => {
   try {
-    console.log(`Obteniendo curso ${courseId} de Firebase...`);
-    const courseDoc = await db.collection('courses').doc(courseId).get();
+    const { id, ...courseInfo } = courseData;
+    
+    // Añadir fecha de creación si es un nuevo curso
+    const courseToSave = {
+      ...courseInfo,
+      // Si no tiene fecha de creación, añadirla como Timestamp de Firebase
+      creationDate: courseInfo.creationDate || firebaseTimestamp()
+    };
+    
+    if (id) {
+      // Actualizar curso existente (mantener la fecha de creación original)
+      await db.collection('courses').doc(id).update(courseToSave);
+      return { id, ...courseToSave };
+    } else {
+      // Crear nuevo curso
+      const docRef = await db.collection('courses').add(courseToSave);
+      return { id: docRef.id, ...courseToSave };
+    }
+  } catch (error) {
+    console.error('Error guardando curso:', error);
+    throw error;
+  }
+};
+
+// Obtener un curso por ID
+export const getCourseById = async (id) => {
+  try {
+    console.log(`Obteniendo curso ${id} de Firebase...`);
+    const courseDoc = await db.collection('courses').doc(id).get();
     
     if (!courseDoc.exists) {
-      console.log(`No se encontró el curso con ID: ${courseId}`);
+      console.log(`No se encontró el curso con ID: ${id}`);
       return null;
     }
     
+    const data = courseDoc.data();
+    // Convertir Timestamp de Firebase a Date de JavaScript si existe
+    const creationDate = data.creationDate ? 
+      data.creationDate.toDate() : 
+      new Date(); // Si no tiene fecha, usar fecha actual
+    
     return {
       id: courseDoc.id,
-      ...courseDoc.data()
+      ...data,
+      creationDate: creationDate
     };
   } catch (error) {
-    console.error(`Error al obtener curso ${courseId}:`, error);
+    console.error(`Error al obtener curso ${id}:`, error);
     return null;
+  }
+};
+
+// Actualizar fechas de creación para cursos existentes sin fecha
+export const updateMissingCreationDates = async () => {
+  try {
+    const coursesSnapshot = await db.collection('courses').get();
+    
+    if (coursesSnapshot.empty) {
+      console.log('No hay cursos para actualizar fechas');
+      return;
+    }
+    
+    const batch = db.batch();
+    let updatesNeeded = 0;
+    
+    coursesSnapshot.forEach(doc => {
+      const courseData = doc.data();
+      
+      // Si no tiene fecha de creación, establecerla
+      if (!courseData.creationDate) {
+        updatesNeeded++;
+        const courseRef = db.collection('courses').doc(doc.id);
+        batch.update(courseRef, { creationDate: firebaseTimestamp() });
+      }
+    });
+    
+    if (updatesNeeded > 0) {
+      await batch.commit();
+      console.log(`Se actualizaron fechas de creación para ${updatesNeeded} cursos`);
+    } else {
+      console.log('Todos los cursos ya tienen fecha de creación');
+    }
+    
+    return updatesNeeded;
+  } catch (error) {
+    console.error('Error actualizando fechas de creación:', error);
+    throw error;
   }
 };
 

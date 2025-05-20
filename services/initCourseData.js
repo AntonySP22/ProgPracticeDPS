@@ -1,5 +1,5 @@
 // services/initCourseData.js
-import { db } from './firebase';
+import { db, firebaseTimestamp } from './firebase';
 
 export const initializeCoursesData = async () => {
   try {
@@ -8,8 +8,9 @@ export const initializeCoursesData = async () => {
     const achievementsSnapshot = await db.collection('achievements').get();
     
     if (!coursesSnapshot.empty && !achievementsSnapshot.empty) {
-      console.log('Datos ya inicializados');
-      return true;
+      // Si ya existen cursos, verificar si necesitan fecha de creación
+      await updateMissingCreationDates();
+      return;
     }
     
     // Inicializar logros
@@ -23,10 +24,11 @@ export const initializeCoursesData = async () => {
       title: "Python",
       description: "Aprende a crear programas con Python desde cero",
       icon: "python.png",
-      imageUrl: "https://cdn-icons-png.flaticon.com/512/5968/5968350.png", // PNG en lugar de SVG
+      imageUrl: "https://cdn-icons-png.flaticon.com/512/5968/5968350.png",
       level: "Principiante",
       duration: "8 horas",
       order: 1,
+      creationDate: firebaseTimestamp(), // Agrega la fecha actual como timestamp
       lessons: [
         {
           id: "intro",
@@ -48,6 +50,13 @@ export const initializeCoursesData = async () => {
           content: "Vamos a sumar dos variables e imprimir su valor. Lo primero vamos a declararlas, con nombres a y b. Declarar una variable significa \"crearla\".",
           codeExample: "a = 3\nb = 7\nprint(a + b)",
           order: 3
+        },
+        {
+          id: "data_types",
+          title: "Tipos de datos en Python",
+          content: "Python tiene varios tipos de datos integrados que son fundamentales para la programación: enteros (int), flotantes (float), cadenas de texto (str), booleanos (bool), listas (list), tuplas (tuple), conjuntos (set) y diccionarios (dict).",
+          codeExample: "# Tipos de datos básicos\nentero = 42          # int\nflotante = 3.14159    # float\ntexto = \"Hola\"       # str\nbooleano = True      # bool\n\n# Tipos de datos compuestos\nlista = [1, 2, 3]     # list\ntupla = (1, 2, 3)     # tuple\nconjunto = {1, 2, 3}  # set\ndiccionario = {'a': 1, 'b': 2}  # dict",
+          order: 4
         }
       ],
       exercises: [
@@ -59,7 +68,7 @@ export const initializeCoursesData = async () => {
           correctAnswer: "print('Hola Mundo')",
           multiline: false,
           order: 1,
-          points: 10 // Añadimos los puntos
+          points: 10
         },
         {
           id: "ex2",
@@ -69,7 +78,43 @@ export const initializeCoursesData = async () => {
           correctAnswer: "print(a + b)",
           multiline: false,
           order: 2,
-          points: 15 // Añadimos los puntos
+          points: 15
+        },
+        {
+          id: "ex3",
+          lessonId: "data_types",
+          title: "Tipos de datos",
+          description: "Indica si los siguientes enunciados son verdaderos o falsos",
+          exerciseType: "true_false",
+          statements: [
+            {
+              id: "stmt1",
+              text: "En Python, el tipo de dato 'int' se utiliza para representar números enteros.",
+              isCorrect: true
+            },
+            {
+              id: "stmt2",
+              text: "La expresión 3.0 == 3 devuelve False en Python.",
+              isCorrect: false
+            },
+            {
+              id: "stmt3",
+              text: "Las listas en Python son inmutables.",
+              isCorrect: false
+            },
+            {
+              id: "stmt4",
+              text: "El tipo de dato 'dict' permite almacenar pares clave-valor.",
+              isCorrect: true
+            },
+            {
+              id: "stmt5",
+              text: "El operador '+' puede usarse tanto para sumar números como para concatenar cadenas.",
+              isCorrect: true
+            }
+          ],
+          order: 3,
+          points: 20
         }
       ]
     });
@@ -79,10 +124,11 @@ export const initializeCoursesData = async () => {
       title: "Java",
       description: "Domina la programación orientada a objetos con Java",
       icon: "java.png",
-      imageUrl: "https://cdn-icons-png.flaticon.com/512/5968/5968282.png", // PNG en lugar de SVG
+      imageUrl: "https://cdn-icons-png.flaticon.com/512/5968/5968282.png",
       level: "Intermedio",
       duration: "10 horas",
       order: 2,
+      creationDate: firebaseTimestamp(), // Agregamos fecha de creación
       lessons: [
         {
           id: "intro",
@@ -109,6 +155,7 @@ export const initializeCoursesData = async () => {
       exercises: [
         {
           id: "ex1",
+          lessonId: "intro",
           title: "Declaración del método main",
           description: "¿Es correcta la declaración del método main?",
           codeTemplate: "public class Main {\n  public static void main(String[] args) {\n    System.out.println(\"Hola Mundo\");\n  }\n}",
@@ -119,6 +166,7 @@ export const initializeCoursesData = async () => {
         },
         {
           id: "ex2",
+          lessonId: "variables",
           title: "Corrección de código",
           description: "Encuentra y corrige el error en el siguiente código.",
           codeTemplate: "public class Main {\n  public static void main(String[] args) {\n    double precio = 19.99;\n    int precioEntero = precio;\n    System.out.println(precioEntero);\n  }\n}",
@@ -128,6 +176,7 @@ export const initializeCoursesData = async () => {
         },
         {
           id: "ex3",
+          lessonId: "sum",
           title: "Bucle for",
           description: "Escribe un programa que imprima los números del 1 al 5 usando un bucle for.",
           correctAnswer: "for (int i = 1; i <= 5; i++) {\n  System.out.println(i);\n}",
@@ -146,6 +195,7 @@ export const initializeCoursesData = async () => {
       level: "Principiante",
       duration: "6 horas",
       order: 3,
+      creationDate: firebaseTimestamp(), // Agregamos fecha de creación
       lessons: [
         {
           id: "intro",
@@ -199,6 +249,7 @@ export const initializeCoursesData = async () => {
       level: "Intermedio",
       duration: "12 horas",
       order: 4,
+      creationDate: firebaseTimestamp(), // Agregamos fecha de creación
       lessons: [
         {
           id: "intro",
@@ -260,6 +311,7 @@ export const initializeCoursesData = async () => {
       level: "Principiante",
       duration: "8 horas",
       order: 5,
+      creationDate: firebaseTimestamp(), // Agregamos fecha de creación
       lessons: [
         {
           id: "intro",
@@ -320,6 +372,43 @@ export const initializeCoursesData = async () => {
     console.log('Inicialización completada con éxito');
   } catch (error) {
     console.error('Error en la inicialización de datos:', error);
+  }
+};
+
+export const updateMissingCreationDates = async () => {
+  try {
+    const coursesSnapshot = await db.collection('courses').get();
+    
+    if (coursesSnapshot.empty) {
+      console.log('No hay cursos para actualizar fechas');
+      return;
+    }
+    
+    const batch = db.batch();
+    let updatesNeeded = 0;
+    
+    coursesSnapshot.forEach(doc => {
+      const courseData = doc.data();
+      
+      // Si no tiene fecha de creación, establecerla
+      if (!courseData.creationDate) {
+        updatesNeeded++;
+        const courseRef = db.collection('courses').doc(doc.id);
+        batch.update(courseRef, { creationDate: firebaseTimestamp() });
+      }
+    });
+    
+    if (updatesNeeded > 0) {
+      await batch.commit();
+      console.log(`Se actualizaron fechas de creación para ${updatesNeeded} cursos`);
+    } else {
+      console.log('Todos los cursos ya tienen fecha de creación');
+    }
+    
+    return updatesNeeded;
+  } catch (error) {
+    console.error('Error actualizando fechas de creación:', error);
+    throw error;
   }
 };
 

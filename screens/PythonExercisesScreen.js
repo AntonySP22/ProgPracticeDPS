@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { View, Text, ScrollView, StyleSheet, Image, TouchableOpacity, TextInput, Alert } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
+import { GamificationContext } from '../context/GamificationContext';
 
 const PythonExercisesScreen = ({ navigation }) => {
+  const { decreaseLife } = useContext(GamificationContext);
   const [answer1, setAnswer1] = useState('');
   const [answer2, setAnswer2] = useState('');
 
@@ -13,6 +15,7 @@ const PythonExercisesScreen = ({ navigation }) => {
     if (answer1.trim() === correctAnswer1 && answer2.trim() === correctAnswer2) {
       Alert.alert('¡Correcto!', 'Todas las respuestas son correctas.');
     } else {
+      decreaseLife();
       Alert.alert('Incorrecto', 'Algunas respuestas no son correctas. Revisa nuevamente.');
     }
   };
@@ -37,7 +40,7 @@ const PythonExercisesScreen = ({ navigation }) => {
 
         <Text style={styles.subtitle}>Ejercicio 1: Hola Mundo</Text>
         <Text style={styles.text}>
-          Escribe un programa que imprima "Hola Mundo" en la consola.
+          Escribe n programa que imprima "Hola Mundo" en la consola.
         </Text>
         <TextInput
           style={styles.input}

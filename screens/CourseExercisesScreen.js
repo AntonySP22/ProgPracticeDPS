@@ -7,6 +7,7 @@ import { GamificationContext } from '../context/GamificationContext';
 import gamificationService from '../services/gamificationService';
 import LivesDisplay from '../components/LivesDisplay';
 import { auth, db, firebaseTimestamp } from '../services/firebase';
+import TrueFalseExercise from '../components/TrueFalseExercise';
 
 const CourseExercisesScreen = ({ navigation, route }) => {
   const [courseData, setCourseData] = useState(null);
@@ -14,7 +15,7 @@ const CourseExercisesScreen = ({ navigation, route }) => {
   const [answer, setAnswer] = useState('');
   const { courseId, lessonIndex, exerciseIndex, nextLessonIndex } = route.params;
   
-  const { userId, lives, loadUserProgress } = useContext(GamificationContext);
+  const { userId, lives, loadUserProgress, addXp, decreaseLife } = useContext(GamificationContext);
 
   useEffect(() => {
     const loadCourseData = async () => {
@@ -36,8 +37,6 @@ const CourseExercisesScreen = ({ navigation, route }) => {
       loadUserProgress(userId);
     }
   }, [courseId, userId]);
-
-  // Modificar la función handleCheckAnswer
 
   const handleCheckAnswer = async () => {
     if (!courseData?.exercises || exerciseIndex === undefined) return;
@@ -141,36 +140,39 @@ const CourseExercisesScreen = ({ navigation, route }) => {
     }
   };
 
-  const exercise = courseData?.exercises ? courseData.exercises[exerciseIndex] : null;
+  const handleExerciseComplete = (success) => {
+    if (success) {
+      handleContinue();
+    }
+  };
 
-  return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Image
-            source={require('../assets/back-button.png')} 
-            style={styles.backButton}
-          />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>
-          {isLoading ? 'Cargando...' : `Ejercicio - ${courseData?.title}`}
-        </Text>
-      </View>
-
-      {isLoading ? (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#B297F1" />
-          <Text style={styles.loadingText}>Cargando ejercicio...</Text>
+  // Renderizar el contenido del ejercicio basado en su tipo
+  const renderExerciseContent = () => {
+    if (!courseData?.exercises || exerciseIndex === undefined) {
+      return (
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>No se encontró el ejercicio</Text>
         </View>
-      ) : exercise ? (
-        <ScrollView style={styles.content}>
-          {/* Añadir LivesDisplay al inicio */}
-          <LivesDisplay />
-          
+      );
+    }
+
+    const exercise = courseData.exercises[exerciseIndex];
+    
+    // Verificar el tipo de ejercicio (comprobar ambas propiedades posibles)
+    if (exercise.exerciseType === 'true_false' || exercise.type === 'true_false') {
+      return (
+        <TrueFalseExercise 
+          exercise={exercise} 
+          onComplete={handleExerciseComplete}
+        />
+      );
+    } else {
+      // Ejercicio de texto por defecto
+      return (
+        <>
           <Text style={styles.exerciseTitle}>{exercise.title}</Text>
           <Text style={styles.exerciseDescription}>{exercise.description}</Text>
           
-          {/* Mostrar puntos del ejercicio */}
           <Text style={styles.pointsText}>Valor: {exercise.points || 10} puntos</Text>
           
           {exercise.codeTemplate && (
@@ -202,17 +204,38 @@ const CourseExercisesScreen = ({ navigation, route }) => {
               No tienes vidas disponibles. Espera a que se recarguen.
             </Text>
           )}
-        </ScrollView>
-      ) : (
-        <View style={styles.errorContainer}>
-          <Text style={styles.errorText}>No se encontró el ejercicio</Text>
-          <TouchableOpacity 
-            style={styles.backToLessonsButton} 
-            onPress={() => navigation.navigate('CourseLessonsListScreen', { courseId })}
-          >
-            <Text style={styles.backToLessonsText}>Volver a las lecciones</Text>
-          </TouchableOpacity>
+        </>
+      );
+    }
+  };
+
+  return (
+    <View style={styles.container}>
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => navigation.goBack()}>
+          <Image
+            source={require('../assets/back-button.png')} 
+            style={styles.backButton}
+          />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>
+          {isLoading ? 'Cargando...' : `Ejercicio - ${courseData?.title}`}
+        </Text>
+      </View>
+
+      {isLoading ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#B297F1" />
+          <Text style={styles.loadingText}>Cargando ejercicio...</Text>
         </View>
+      ) : (
+        <ScrollView style={styles.content}>
+          {/* Añadir LivesDisplay al inicio */}
+          <LivesDisplay />
+          
+          {/* Renderizar el contenido del ejercicio basado en su tipo */}
+          {renderExerciseContent()}
+        </ScrollView>
       )}
 
       <View style={styles.navBar}>

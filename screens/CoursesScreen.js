@@ -1,10 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, FlatList, TouchableOpacity, StyleSheet, Image, ScrollView, Modal, ActivityIndicator } from 'react-native';
+import { 
+  View, 
+  Text, 
+  FlatList, 
+  StyleSheet, 
+  TouchableOpacity, 
+  Image,
+  TextInput,
+  ActivityIndicator 
+} from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { getAllCourses } from '../services/courseService';
 
 const CoursesScreen = ({ navigation }) => {
-  const [isMenuVisible, setIsMenuVisible] = useState(false);
   const [courses, setCourses] = useState([]);
   const [filteredCourses, setFilteredCourses] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -45,12 +53,7 @@ const CoursesScreen = ({ navigation }) => {
     navigation.navigate('CourseIntroScreen', { courseId });
   };
 
-  const toggleMenu = () => {
-    setIsMenuVisible(!isMenuVisible);
-  };
-
   const navigateTo = (screen) => {
-    setIsMenuVisible(false);
     navigation.navigate(screen);
   };
 
@@ -61,7 +64,7 @@ const CoursesScreen = ({ navigation }) => {
       const courseImages = {
         'python': 'https://cdn-icons-png.flaticon.com/512/5968/5968350.png',
         'java': 'https://cdn-icons-png.flaticon.com/512/5968/5968282.png',
-        'html': 'https://cdn-icons-png.flaticon.com/512/5968/5968267.png',
+        'html': 'https://cdn-icons-png.flaticon.com/512/1216/1216733.png',
         'swift': 'https://cdn-icons-png.flaticon.com/512/919/919833.png',
         'sql': 'https://cdn-icons-png.flaticon.com/512/4248/4248443.png'
       };
@@ -110,34 +113,7 @@ const CoursesScreen = ({ navigation }) => {
             onChangeText={setSearchText}
           />
         </View>
-        <TouchableOpacity onPress={toggleMenu} style={styles.menuButton}>
-          <Icon name="menu" size={28} color="#FFFFFF" />
-        </TouchableOpacity>
       </View>
-
-      <Modal
-        transparent={true}
-        visible={isMenuVisible}
-        animationType="slide"
-        onRequestClose={() => setIsMenuVisible(false)}
-      >
-        <View style={styles.menuOverlay}>
-          <View style={styles.menuContainer}>
-            <TouchableOpacity style={styles.menuItem} onPress={() => navigateTo('CoursesScreen')}>
-              <Text style={styles.menuItemText}>Cursos</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.menuItem} onPress={() => navigateTo('Home')}>
-              <Text style={styles.menuItemText}>Inicio</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.menuItem} onPress={() => navigateTo('ProfileScreen')}>
-              <Text style={styles.menuItemText}>Perfil</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.menuItem} onPress={() => navigateTo('HelpScreen')}>
-              <Text style={styles.menuItemText}>Ayuda</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
 
       {isLoading ? (
         <View style={styles.loadingContainer}>
@@ -214,38 +190,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#FFFFFF',
   },
-  menuButton: {
-    marginLeft: 10,
-  },
-  menuOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'flex-start',
-    alignItems: 'flex-end',
-  },
-  menuContainer: {
-    width: '50%',
-    backgroundColor: '#FFFFFF',
-    marginTop: 50,
-    marginRight: 10,
-    borderRadius: 10,
-    padding: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.8,
-    shadowRadius: 2,
-    elevation: 5,
-  },
-  menuItem: {
-    paddingVertical: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F5F5F5',
-  },
-  menuItemText: {
-    fontSize: 16,
-    color: '#052659',
-    fontWeight: 'bold',
-  },
   sectionTitle: {
     fontSize: 22,
     fontWeight: 'bold',
@@ -284,7 +228,7 @@ const styles = StyleSheet.create({
     height: 60,
     borderRadius: 8,
     marginRight: 15,
-    overflow: 'hidden', // Garantiza que la imagen se mantenga dentro del contenedor
+    overflow: 'hidden',
   },
   courseInfo: {
     flex: 1,
@@ -329,6 +273,5 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
 });
-
 
 export default CoursesScreen;

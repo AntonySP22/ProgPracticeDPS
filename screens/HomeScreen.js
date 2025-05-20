@@ -16,10 +16,12 @@ import { GamificationContext } from '../context/GamificationContext';
 import LivesDisplay from '../components/LivesDisplay';
 import StreakTracker from '../components/StreakTracker';
 import AchievementCard from '../components/AchievementCard';
+import { getAllCourses } from '../services/courseService'; // Importamos función para obtener cursos
 
 const HomeScreen = ({ navigation }) => {
   const [isMenuVisible, setIsMenuVisible] = useState(false);
   const [userData, setUserData] = useState(null);
+  const [newCourses, setNewCourses] = useState([]); // Estado para los cursos nuevos
   const { 
     xp, 
     lives, 
@@ -85,6 +87,38 @@ const HomeScreen = ({ navigation }) => {
     return () => unsubscribe();
   }, []);
 
+  // Cargar cursos y filtrar los nuevos (menos de 10 días)
+  useEffect(() => {
+    const loadCourses = async () => {
+      try {
+        const coursesData = await getAllCourses();
+        
+        // Filtrar cursos nuevos (creados en los últimos 10 días)
+        const tenDaysAgo = new Date();
+        tenDaysAgo.setDate(tenDaysAgo.getDate() - 10);
+        
+        // Filtrado con logging para depuración
+        const recentCourses = coursesData.filter(course => {
+          if (course.creationDate) {
+            const courseDate = new Date(course.creationDate);
+            const isNew = courseDate >= tenDaysAgo;
+            console.log(`Curso: ${course.title}, Fecha: ${courseDate.toLocaleDateString()}, ¿Es nuevo?: ${isNew}`);
+            return isNew;
+          }
+          console.log(`Curso sin fecha: ${course.title}`);
+          return false;
+        });
+        
+        console.log(`Encontrados ${recentCourses.length} cursos nuevos de un total de ${coursesData.length}`);
+        setNewCourses(recentCourses);
+      } catch (error) {
+        console.error('Error cargando cursos:', error);
+      }
+    };
+    
+    loadCourses();
+  }, []);
+
   const toggleMenu = () => {
     setIsMenuVisible(!isMenuVisible);
   };
@@ -103,6 +137,10 @@ const HomeScreen = ({ navigation }) => {
       console.error('Error al cerrar sesión:', error);
       Alert.alert('Error', 'No se pudo cerrar sesión correctamente');
     }
+  };
+
+  const handleCoursePress = (courseId) => {
+    navigation.navigate('CourseIntroScreen', { courseId });
   };
 
   return (
@@ -134,8 +172,16 @@ const HomeScreen = ({ navigation }) => {
         animationType="slide"
         onRequestClose={() => setIsMenuVisible(false)}
       >
-        <View style={styles.menuOverlay}>
-          <View style={styles.menuContainer}>
+        <TouchableOpacity 
+          style={styles.menuOverlay}
+          activeOpacity={1}
+          onPress={() => setIsMenuVisible(false)}
+        >
+          <TouchableOpacity 
+            style={styles.menuContainer}
+            activeOpacity={1}
+            onPress={(e) => e.stopPropagation()} // Esto evita que los toques dentro del menú lo cierren
+          >
             <TouchableOpacity style={styles.menuItem} onPress={() => navigateTo('CoursesScreen')}>
               <Text style={styles.menuItemText}>Cursos</Text>
             </TouchableOpacity>
@@ -151,8 +197,8 @@ const HomeScreen = ({ navigation }) => {
             <TouchableOpacity style={styles.menuItem} onPress={handleLogout}>
               <Text style={[styles.menuItemText, { color: '#FF3B30' }]}>Cerrar sesión</Text>
             </TouchableOpacity>
-          </View>
-        </View>
+          </TouchableOpacity>
+        </TouchableOpacity>
       </Modal>
 
       {/* Sección de gamificación */}
@@ -202,28 +248,23 @@ const HomeScreen = ({ navigation }) => {
         </TouchableOpacity>
       </View>
 
-      <Text style={styles.sectionTitle}>Cursos en progreso</Text>
+      {/* Sección de Cursos nuevos */}
+      <Text style={styles.sectionTitle}>Cursos nuevos</Text>
       <View style={styles.courseList}>
-        <View style={styles.courseItem}>
-          <Text style={styles.courseName}>Introducción a SQL</Text>
-          <Text style={styles.courseStatus}>En Progreso</Text>
-        </View>
-        <View style={styles.courseItem}>
-          <Text style={styles.courseName}>Introducción a Python</Text>
-          <Text style={styles.courseStatus}>En Progreso</Text>
-        </View>
-      </View>
-
-      <Text style={styles.sectionTitle}>Cursos completados</Text>
-      <View style={styles.courseList}>
-        <View style={styles.courseItem}>
-          <Text style={styles.courseName}>Desarrollo web</Text>
-          <Text style={styles.courseStatus}>Completado</Text>
-        </View>
-        <View style={styles.courseItem}>
-          <Text style={styles.courseName}>Introducción a C#</Text>
-          <Text style={styles.courseStatus}>Completado</Text>
-        </View>
+        {newCourses.length > 0 ? (
+          newCourses.map((course, index) => (
+            <TouchableOpacity
+              key={index}
+              style={styles.courseItem}
+              onPress={() => handleCoursePress(course.id)}
+            >
+              <Text style={styles.courseName}>{course.title}</Text>
+              <Text style={styles.courseStatus}>Nuevo</Text>
+            </TouchableOpacity>
+          ))
+        ) : (
+          <Text style={styles.emptyText}>No hay cursos nuevos disponibles</Text>
+        )}
       </View>
 
       <TouchableOpacity style={styles.exploreButton} onPress={() => navigateTo('CoursesScreen')}>
@@ -295,7 +336,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   
-  // Nueva sección de gamificación
+  // Sección de gamificación
   gamificationContainer: {
     marginBottom: 20,
   },

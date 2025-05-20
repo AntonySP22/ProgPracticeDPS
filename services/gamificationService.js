@@ -203,14 +203,22 @@ export const gamificationService = {
       const { lives } = await gamificationService.updateLives(userId);
       
       if (lives <= 0) {
-        throw new Error('El usuario no tiene vidas disponibles');
+        return { lives: 0 };
       }
       
       const newLives = Math.max(0, lives - 1);
       
-      await db.collection('users').doc(userId).update({
-        'gamification.lives': newLives
-      });
+      // También actualizamos lastLifeRecharge si no es el máximo de vidas
+      if (newLives < MAX_LIVES) {
+        await db.collection('users').doc(userId).update({
+          'gamification.lives': newLives,
+          'gamification.lastLifeRecharge': firebaseTimestamp() // Actualizamos el timestamp para iniciar la recarga
+        });
+      } else {
+        await db.collection('users').doc(userId).update({
+          'gamification.lives': newLives
+        });
+      }
       
       return { lives: newLives };
     } catch (error) {
