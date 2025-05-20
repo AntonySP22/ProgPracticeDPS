@@ -29,27 +29,6 @@ const WelcomeScreen = ({ navigation }) => {
           <Text style={styles.buttonText}>Registrarse</Text>
         </ImageBackground>
       </TouchableOpacity>
-
-      <View style={styles.separator}>
-        <View style={styles.separatorLine} />
-        <Text style={styles.separatorText}>Iniciar sesión con:</Text>
-        <View style={styles.separatorLine} />
-      </View>
-
-      <View style={styles.socialIconsContainer}>
-        <TouchableOpacity style={styles.socialIcon}>
-          <Image source={require('../assets/google-icon.png')} style={styles.socialIconImage} />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.socialIcon}>
-          <Image source={require('../assets/facebook-icon.png')} style={styles.socialIconImage} />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.socialIcon}>
-          <Image source={require('../assets/twitter-icon.png')} style={styles.socialIconImage} />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.socialIcon}>
-          <Image source={require('../assets/apple-icon.png')} style={styles.socialIconImage} />
-        </TouchableOpacity>
-      </View>
     </View>
   );
 };
@@ -72,6 +51,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginTop: 70,
+    marginBottom: 50, // Added extra margin at bottom to compensate for removed elements
   },
   logo: {
     width: 200,
@@ -93,37 +73,6 @@ const styles = StyleSheet.create({
     fontSize: 18,
     marginBottom: 6,
     fontWeight: 'bold',
-  },
-  separator: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    width: '80%',
-    marginVertical: 20,
-  },
-  separatorLine: {
-    flex: 1,
-    height: 1,
-    backgroundColor: '#ccc',
-  },
-  separatorText: {
-    marginHorizontal: 10,
-    color: '#666',
-    fontSize: 14,
-  },
-  socialIconsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    width: '80%',
-  },
-  socialIcon: {
-    width: 50,
-    height: 50,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  socialIconImage: {
-    width: 30,
-    height: 30,
   },
 });
 
