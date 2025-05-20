@@ -222,31 +222,6 @@ const LoginScreen = ({ navigation }) => {
           </Text>
         </ImageBackground>
       </TouchableOpacity>
-
-      <View style={styles.separator}>
-        <View style={styles.separatorLine} />
-        <Text style={styles.separatorText}>Iniciar sesión con:</Text>
-        <View style={styles.separatorLine} />
-      </View>
-
-      <View style={styles.socialIconsContainer}>
-        <TouchableOpacity
-          style={styles.socialIcon}
-        >
-          <Image source={require('../assets/google-icon.png')} style={styles.socialIconImage} />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.socialIcon} disabled={isLoading}>
-          <Image source={require('../assets/facebook-icon.png')} style={styles.socialIconImage} />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.socialIcon} disabled={isLoading}>
-          <Image source={require('../assets/twitter-icon.png')} style={styles.socialIconImage} />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.socialIcon} disabled={isLoading}>
-          <Image source={require('../assets/apple-icon.png')} style={styles.socialIconImage} />
-        </TouchableOpacity>
-      </View>
-
-      <Image source={require('../assets/waves.png')} style={styles.wavesBottom} />
     </View>
   );
 };

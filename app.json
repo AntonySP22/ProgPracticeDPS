@@ -11,7 +11,8 @@
       "backgroundColor": "#B297F1"
     },
     "updates": {
-      "fallbackToCacheTimeout": 0
+      "fallbackToCacheTimeout": 0,
+      "url": "https://u.expo.dev/e23f5dd3-65ac-4346-990d-f3a68796c746"
     },
     "assetBundlePatterns": [
       "**/*"
@@ -22,13 +23,19 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#B297F1"
-      }
+      },
+      "runtimeVersion": "1.0.0"
     },
     "extra": {
       "eas": {
         "projectId": "e23f5dd3-65ac-4346-990d-f3a68796c746"
       }
     },
-    "owner": "antontsp22"
+    "owner": "antontsp22",
+    "ios": {
+      "runtimeVersion": {
+        "policy": "appVersion"
+      }
+    }
   }
 }
