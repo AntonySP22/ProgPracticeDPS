@@ -74,7 +74,7 @@ export const initializeCoursesData = async () => {
           id: "ex2",
           lessonId: "sum",
           title: "Suma de Variables",
-          description: "Declara dos variables, asígnales valores y luego imprime la suma de ambas.",
+          description: "Se han declarado las siguientes variables: a = 10, b = 3, imprime la suma de alla dos haciendo uso de las variables",
           correctAnswer: "print(a + b)",
           multiline: false,
           order: 2,
@@ -115,6 +115,37 @@ export const initializeCoursesData = async () => {
           ],
           order: 3,
           points: 20
+        },
+        {
+          id: "ex4",
+          lessonId: "data_types",
+          title: "Ordenar el código",
+          description: "Organiza los bloques de código para crear un programa que defina una lista de números, los ordene y muestre el resultado.",
+          exerciseType: "order_blocks",
+          codeBlocks: [
+            {
+              text: "numeros = [5, 2, 8, 1, 10]",
+              order: 0
+            },
+            {
+              text: "numeros.sort()",
+              order: 1
+            },
+            {
+              text: "print('Lista ordenada:')",
+              order: 2
+            },
+            {
+              text: "for numero in numeros:",
+              order: 3
+            },
+            {
+              text: "    print(numero)",
+              order: 4
+            }
+          ],
+          order: 4,
+          points: 25
         }
       ]
     });

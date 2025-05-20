@@ -1,13 +1,17 @@
 // screens/CourseLessonsListScreen.js
-import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, StyleSheet, Image, TouchableOpacity, ActivityIndicator } from 'react-native';
+import React, { useState, useEffect, useContext } from 'react';
+import { View, Text, FlatList, StyleSheet, Image, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { getCourseById } from '../services/courseService';
+import { GamificationContext } from '../context/GamificationContext';
+import { db } from '../services/firebase';
 
 const CourseLessonsListScreen = ({ navigation, route }) => {
   const [courseData, setCourseData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [userProgress, setUserProgress] = useState({});
   const { courseId } = route.params;
+  const { userId } = useContext(GamificationContext);
 
   useEffect(() => {
     const loadCourseData = async () => {
@@ -25,6 +29,25 @@ const CourseLessonsListScreen = ({ navigation, route }) => {
     loadCourseData();
   }, [courseId]);
 
+  useEffect(() => {
+    const loadUserProgress = async () => {
+      if (!userId) return;
+      
+      try {
+        const userDoc = await db.collection('users').doc(userId).get();
+        if (userDoc.exists) {
+          const userData = userDoc.data();
+          const progress = userData?.progress?.courses?.[courseId] || {};
+          setUserProgress(progress);
+        }
+      } catch (error) {
+        console.error('Error cargando progreso del usuario:', error);
+      }
+    };
+    
+    loadUserProgress();
+  }, [userId, courseId]);
+
   const navigateToLesson = (lessonIndex) => {
     navigation.navigate('CourseTheoryScreen', { 
       courseId,
@@ -33,23 +56,85 @@ const CourseLessonsListScreen = ({ navigation, route }) => {
     });
   };
 
-  const renderLessonItem = ({ item, index }) => (
-    <TouchableOpacity 
-      style={styles.lessonCard}
-      onPress={() => navigateToLesson(index)}
-    >
-      <View style={styles.lessonNumber}>
-        <Text style={styles.lessonNumberText}>{index + 1}</Text>
-      </View>
-      <View style={styles.lessonInfo}>
-        <Text style={styles.lessonTitle}>{item.title}</Text>
-        <Text style={styles.lessonDescription} numberOfLines={2}>
-          {item.content.substring(0, 80)}...
-        </Text>
-      </View>
-      <Icon name="chevron-forward" size={24} color="#B297F1" />
-    </TouchableOpacity>
-  );
+  // Modificación en la navegación a ejercicios
+  const handleStartExercises = async (lessonId) => {
+    try {
+      // Debug info
+      console.log(`Starting exercises for lesson ${lessonId}`);
+      console.log('Course data:', courseData?.exercises?.length || 0, 'exercises total');
+      
+      // Obtener todos los ejercicios de esta lección
+      const lessonExercises = courseData.exercises
+        .filter(ex => ex.lessonId === lessonId)
+        .sort((a, b) => (a.order || 0) - (b.order || 0));
+      
+      console.log(`Found ${lessonExercises.length} exercises for lesson ${lessonId}`);
+      
+      // Show details of found exercises for debugging
+      console.log('Exercise details:', lessonExercises.map(ex => ({
+        id: ex.id,
+        lessonId: ex.lessonId,
+        title: ex.title
+      })));
+      
+      if (lessonExercises.length === 0) {
+        Alert.alert("No hay ejercicios", "Esta lección no tiene ejercicios disponibles.");
+        return;
+      }
+      
+      // Navegar al primer ejercicio, pasando la lista completa
+      navigation.navigate('CourseExercisesScreen', { 
+        courseId: courseId,
+        lessonId: lessonId,
+        exercisesList: lessonExercises,
+        currentExerciseIndex: 0
+      });
+    } catch (error) {
+      console.error('Error cargando ejercicios:', error);
+      Alert.alert("Error", "Ocurrió un error al cargar los ejercicios.");
+    }
+  };
+
+  const renderLessonItem = ({ item, index }) => {
+    // Verificar si esta lección está completada
+    const isLessonCompleted = userProgress?.lessons?.[item.id]?.completed || false;
+    const hasTheoryViewed = userProgress?.lessons?.[item.id]?.teoriaVista || false;
+    
+    // Verificar si hay ejercicios para esta lección
+    const hasExercises = courseData?.exercises && 
+                       courseData.exercises.some(ex => ex.lessonId === item.id);
+    
+    // Mostrar icono de "en progreso" si ha visto la teoría pero no ha completado los ejercicios
+    const isInProgress = hasTheoryViewed && !isLessonCompleted && hasExercises;
+    
+    return (
+      <TouchableOpacity 
+        style={[
+          styles.lessonCard, 
+          isLessonCompleted && styles.completedLessonCard,
+          isInProgress && styles.inProgressLessonCard
+        ]}
+        onPress={() => navigateToLesson(index)}
+      >
+        <View style={styles.lessonNumber}>
+          <Text style={styles.lessonNumberText}>{index + 1}</Text>
+        </View>
+        <View style={styles.lessonInfo}>
+          <Text style={styles.lessonTitle}>{item.title}</Text>
+          <Text style={styles.lessonDescription} numberOfLines={2}>
+            {item.content.substring(0, 80)}...
+          </Text>
+        </View>
+        {isLessonCompleted ? (
+          <Icon name="checkmark-circle" size={24} color="#4CD964" />
+        ) : isInProgress ? (
+          <Icon name="time" size={24} color="#FF9500" />
+        ) : (
+          <Icon name="chevron-forward" size={24} color="#B297F1" />
+        )}
+      </TouchableOpacity>
+    );
+  };
 
   return (
     <View style={styles.container}>
@@ -163,6 +248,16 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 2,
+  },
+  completedLessonCard: {
+    backgroundColor: '#E8F5E9',
+    borderLeftWidth: 5,
+    borderLeftColor: '#4CD964',
+  },
+  inProgressLessonCard: {
+    backgroundColor: '#FFF3CD',
+    borderLeftWidth: 5,
+    borderLeftColor: '#FF9500',
   },
   lessonNumber: {
     width: 40,
