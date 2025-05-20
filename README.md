@@ -18,6 +18,7 @@
 📌 **Diseños Mockups:** [MockUps en Figma](https://www.figma.com/design/9ySzJIC4WoWSSgYXnaz3pq/ProgPractice?node-id=0-1&p=f&t=56XKcwEtE3sKzddR-0)
 
 📌 **Documento del Proyecto (PDF):** [Proyecto de Catedra - Fase 1](https://drive.google.com/file/d/1S5RRrFiurgbpfjnz-7C1wk47I0EVrqt7/view?usp=sharing)
+
 📌 **Enlace para ver con Expo Go:** [Enlace para preview](https://expo.dev/preview/update?message=Version%20final*&updateRuntimeVersion=1.0.0&createdAt=2025-05-20T17%3A41%3A06.122Z&slug=exp&projectId=e23f5dd3-65ac-4346-990d-f3a68796c746&group=b455f7f2-b76f-41fe-b573-2ed80d56f210)
 
 ---
