@@ -27,7 +27,7 @@ import SQLTheoryScreen from './screens/SQLTheoryScreen';
 import ProfileScreen from './screens/ProfileScreen';
 import HelpScreen from './screens/HelpScreen';
 import Codigo from './screens/Codigo';
-import { initializeCoursesData } from './services/initCourseData';
+import { initializeCoursesData, updateMissingCreationDates } from './services/initCourseData';
 import CourseIntroScreen from './screens/CourseIntroScreen';
 import CourseTheoryScreen from './screens/CourseTheoryScreen';
 import CourseExercisesScreen from './screens/CourseExercisesScreen';
@@ -101,10 +101,20 @@ const Stack = createStackNavigator();
 
 const App = () => {
   useEffect(() => {
-    // Inicializa los datos de cursos si no existen
-    initializeCoursesData().catch(err => 
-      console.error('Error al inicializar datos de cursos:', err)
-    );
+    // Inicializa los datos de cursos si no existen y asegura que tengan fechas de creación
+    const initializeData = async () => {
+      try {
+        console.log('Iniciando inicialización de datos...');
+        await initializeCoursesData();
+        // Asegurar que todos los cursos tengan fechas de creación
+        await updateMissingCreationDates();
+        console.log('Inicialización de datos completada con éxito');
+      } catch (err) {
+        console.error('Error al inicializar datos:', err);
+      }
+    };
+    
+    initializeData();
     
     if (__DEV__) {
       LogBox.ignoreLogs([

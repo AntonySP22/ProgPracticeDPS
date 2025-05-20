@@ -2,179 +2,253 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity, TextInput, Alert, ActivityIndicator, ScrollView } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
-import { getCourseById } from '../services/courseService';
+import { getCourseById, markLessonComplete } from '../services/courseService';
+import { markExerciseComplete } from '../services/courseService';
 import { GamificationContext } from '../context/GamificationContext';
 import gamificationService from '../services/gamificationService';
 import LivesDisplay from '../components/LivesDisplay';
 import { auth, db, firebaseTimestamp } from '../services/firebase';
+import TrueFalseExercise from '../components/TrueFalseExercise';
+import CodeBlocksOrderExercise from '../components/CodeBlocksOrderExercise';
 
 const CourseExercisesScreen = ({ navigation, route }) => {
   const [courseData, setCourseData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [answer, setAnswer] = useState('');
-  const { courseId, lessonIndex, exerciseIndex, nextLessonIndex } = route.params;
+  const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0);
+  const [exercises, setExercises] = useState([]);
+  const [isExerciseCompleted, setIsExerciseCompleted] = useState(false);
   
-  const { userId, lives, loadUserProgress } = useContext(GamificationContext);
+  // Extraer parámetros de la navegación
+  const { courseId, lessonId, exercisesList, nextLessonIndex } = route.params;
+  
+  const { userId, lives, loadUserProgress, addXp, decreaseLife } = useContext(GamificationContext);
+
+  // Verificar si el ejercicio actual está completado
+  useEffect(() => {
+    const checkExerciseStatus = async () => {
+      if (!userId || !exercises.length || currentExerciseIndex >= exercises.length) return;
+      
+      try {
+        const currentExercise = exercises[currentExerciseIndex];
+        const userDoc = await db.collection('users').doc(userId).get();
+        const userData = userDoc.exists ? userDoc.data() : {};
+        const exerciseProgress = userData?.progress?.courses?.[courseId]?.exercises?.[currentExercise.id];
+        setIsExerciseCompleted(!!exerciseProgress?.completed);
+      } catch (error) {
+        console.error('Error al verificar estado del ejercicio:', error);
+        setIsExerciseCompleted(false);
+      }
+    };
+    
+    checkExerciseStatus();
+  }, [userId, courseId, exercises, currentExerciseIndex]);
 
   useEffect(() => {
-    const loadCourseData = async () => {
+    const loadData = async () => {
       try {
         setIsLoading(true);
+        
+        // Log parameters received
+        console.log("CourseExercisesScreen - Parameters received:", { 
+          courseId, 
+          lessonId, 
+          hasExercisesList: !!(exercisesList && exercisesList.length) 
+        });
+        
+        // If we have pre-loaded exercises, use them directly
+        if (exercisesList && exercisesList.length > 0) {
+          console.log('Using pre-loaded exercises list:', exercisesList.length);
+          setExercises(exercisesList);
+          setCurrentExerciseIndex(route.params.currentExerciseIndex || 0);
+          setCourseData({ exercises: exercisesList });
+          setIsLoading(false);
+          return;
+        }
+
+        // Additional safety check for lessonId
+        if (!lessonId) {
+          console.error("No lessonId provided in params:", route.params);
+          Alert.alert("Error", "No se pudo cargar los ejercicios de esta lección.");
+          setExercises([]);
+          setIsLoading(false);
+          navigation.goBack();
+          return;
+        }
+        
+        // Otherwise, load course data
         const data = await getCourseById(courseId);
         setCourseData(data);
+        
+        console.log("Course lessons:", data?.lessons?.map(l => ({ id: l.id, title: l.title })));
+        
+        if (!lessonId) {
+          console.error("No lessonId provided");
+          setExercises([]);
+          setIsLoading(false);
+          return;
+        }
+        
+        const currentLesson = data?.lessons?.find(lesson => lesson.id === lessonId);
+        
+        if (!currentLesson) {
+          console.error(`No se encontró la lección con ID: ${lessonId}`);
+          setExercises([]);
+          setIsLoading(false);
+          return;
+        }
+        
+        const lessonExercises = data?.exercises
+          ?.filter(ex => ex.lessonId === currentLesson.id)
+          ?.sort((a, b) => (a.order || 0) - (b.order || 0)) || [];
+        
+        setExercises(lessonExercises);
       } catch (error) {
-        console.error('Error cargando datos del curso:', error);
+        console.error('Error loading course data:', error);
       } finally {
         setIsLoading(false);
       }
     };
+    
+    loadData();
+  }, [courseId, lessonId, exercisesList]);
 
-    loadCourseData();
-    
-    // Refrescar datos de usuario cada vez que se muestra la pantalla
-    if (userId) {
-      loadUserProgress(userId);
-    }
-  }, [courseId, userId]);
-
-  // Modificar la función handleCheckAnswer
-
-  const handleCheckAnswer = async () => {
-    if (!courseData?.exercises || exerciseIndex === undefined) return;
-    if (!userId) {
-      Alert.alert('Inicia sesión', 'Debes iniciar sesión para guardar tu progreso');
-      return;
-    }
-    
-    // Comprobar si hay vidas disponibles
-    if (lives <= 0) {
-      Alert.alert(
-        'Sin vidas', 
-        'No tienes vidas disponibles. Espera a que se recarguen o compra más vidas.',
-        [{ text: 'Entendido' }]
-      );
-      return;
-    }
-    
-    const exercise = courseData.exercises[exerciseIndex];
-    
-    // Validar que hay una respuesta
-    if (!answer.trim()) {
-      Alert.alert('Respuesta vacía', 'Por favor, ingresa una respuesta antes de continuar.');
-      return;
-    }
-    
-    if (answer.trim() === exercise.correctAnswer.trim()) {
-      // Respuesta correcta
-      const points = exercise.points || 10; // Puntos por defecto si no se especifican
-      
-      try {
-        // Añadir puntos al usuario
-        await gamificationService.addXp(userId, points);
-        
-        // Registrar ejercicio como completado
-        await db.collection('users').doc(userId).update({
-          [`progress.courses.${courseId}.exercises.${exercise.id}`]: {
-            completed: true,
-            score: 100,
-            completedAt: firebaseTimestamp()
-          },
-          'progress.lastActivity': firebaseTimestamp()
+  // Avanzar al siguiente ejercicio o terminar
+  const goToNextExercise = () => {
+    if (currentExerciseIndex < exercises.length - 1) {
+      // Hay más ejercicios en esta lección
+      setCurrentExerciseIndex(prev => prev + 1);
+      setAnswer(''); // Limpiar respuesta anterior
+    } else {
+      // Completamos todos los ejercicios de esta lección
+      if (nextLessonIndex !== undefined && nextLessonIndex !== null) {
+        // Si hay una lección siguiente, navegamos a ella
+        navigation.replace('CourseTheoryScreen', {
+          courseId,
+          lessonIndex: nextLessonIndex
         });
-        
-        // Actualizar la racha - un ejercicio completado = lección completada
-        await gamificationService.updateStreak(userId, true);
-        console.log("Racha actualizada - ejercicio completado");
-        
-        // Verificar logros
-        await gamificationService.checkExerciseAchievements(userId);
-        
-        // Actualizar UI
-        if (loadUserProgress) {
-          loadUserProgress(userId);
-        }
-        
+      } else {
+        // Si es la última lección, volvemos a la lista de lecciones
         Alert.alert(
-          '¡Correcto!', 
-          `Tu respuesta es correcta. +${points} puntos`,
-          [{ text: 'Continuar', onPress: () => handleContinue() }]
+          '¡Felicidades!',
+          'Has completado todos los ejercicios de esta lección.',
+          [{ text: 'Continuar', onPress: () => navigation.navigate('CourseLessonsListScreen', { courseId }) }]
         );
-      } catch (error) {
-        console.error('Error al procesar respuesta correcta:', error);
-        Alert.alert('Error', 'No se pudo guardar tu progreso. Intenta nuevamente.');
-      }
-    } else {
-      // Respuesta incorrecta
-      try {
-        // Disminuir una vida
-        await gamificationService.decreaseLife(userId);
-        
-        // Actualizar UI
-        if (loadUserProgress) {
-          loadUserProgress(userId);
-        }
-        
-        Alert.alert('Incorrecto', 'Intenta otra respuesta. Has perdido una vida.');
-      } catch (error) {
-        console.error('Error al procesar respuesta incorrecta:', error);
       }
     }
   };
 
-  const handleContinue = () => {
-    if (nextLessonIndex !== null) {
-      // Ir a la siguiente lección
-      navigation.replace('CourseTheoryScreen', {
-        courseId,
-        lessonIndex: nextLessonIndex,
-        totalLessons: courseData?.lessons?.length || 0
-      });
-    } else {
-      // Si es el último ejercicio del curso
+  // Para ejercicios especiales como verdadero/falso
+  const handleExerciseComplete = (success) => {
+    if (success) {
+      goToNextExercise();
+    }
+  };
+
+  // Verificar respuesta de ejercicio de texto
+  const handleCheckAnswer = async () => {
+    if (exercises.length === 0 || currentExerciseIndex >= exercises.length) return;
+    
+    const currentExercise = exercises[currentExerciseIndex];
+    
+    // Verificar vidas disponibles
+    if (lives <= 0) {
+      Alert.alert('Sin vidas', 'No tienes vidas disponibles. Espera a que se recarguen.');
+      return;
+    }
+    
+    // Validar respuesta
+    if (!answer.trim()) {
+      Alert.alert('Respuesta vacía', 'Por favor, ingresa una respuesta antes de verificar.');
+      return;
+    }
+
+    if (answer.trim().toLowerCase() === currentExercise.correctAnswer.trim().toLowerCase()) {
+      // Success! The answer is correct
       Alert.alert(
-        '¡Felicitaciones!', 
-        'Has completado todas las lecciones de este curso.',
-        [
-          { text: 'Volver a la lista', onPress: () => navigation.navigate('CourseLessonsListScreen', { courseId }) }
-        ]
+        "¡Correcto!",
+        "Has respondido correctamente.",
+        [{ text: "Continuar", onPress: async () => {
+          try {
+            // Add XP points for the exercise
+            await addXp(currentExercise.points || 10);
+            
+            // This is the important part - mark both exercise and lesson as complete
+            await markLessonComplete(
+              userId, 
+              courseId, 
+              currentExercise.lessonId, 
+              currentExercise.id
+            );
+            
+            // Move to next exercise or complete
+            goToNextExercise();
+          } catch (error) {
+            console.error("Error processing exercise completion:", error);
+          }
+        }}]
+      );
+    } else {
+      // Handle incorrect answer
+      decreaseLife();
+      Alert.alert(
+        "Incorrecto",
+        "Tu respuesta no es correcta. Intenta de nuevo.",
+        [{ text: "Entendido" }]
       );
     }
   };
 
-  const exercise = courseData?.exercises ? courseData.exercises[exerciseIndex] : null;
-
-  return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Image
-            source={require('../assets/back-button.png')} 
-            style={styles.backButton}
-          />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>
-          {isLoading ? 'Cargando...' : `Ejercicio - ${courseData?.title}`}
-        </Text>
-      </View>
-
-      {isLoading ? (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#B297F1" />
-          <Text style={styles.loadingText}>Cargando ejercicio...</Text>
+  // Renderizar el ejercicio current según su tipo
+  const renderExerciseContent = () => {
+    if (exercises.length === 0 || currentExerciseIndex >= exercises.length) {
+      return (
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>No hay ejercicios disponibles para esta lección</Text>
+          <TouchableOpacity 
+            style={styles.backToLessonsButton}
+            onPress={() => navigation.navigate('CourseLessonsListScreen', { courseId })}
+          >
+            <Text style={styles.backToLessonsText}>Volver a lecciones</Text>
+          </TouchableOpacity>
         </View>
-      ) : exercise ? (
-        <ScrollView style={styles.content}>
-          {/* Añadir LivesDisplay al inicio */}
-          <LivesDisplay />
+      );
+    }
+
+    const currentExercise = exercises[currentExerciseIndex];
+    
+    // Renderizar según tipo de ejercicio
+    if (currentExercise.exerciseType === 'true_false') {
+      return (
+        <TrueFalseExercise 
+          exercise={currentExercise} 
+          onComplete={handleExerciseComplete} 
+        />
+      );
+    } else if (currentExercise.exerciseType === 'order_blocks') {
+      return (
+        <CodeBlocksOrderExercise
+          exercise={currentExercise}
+          onComplete={handleExerciseComplete}
+        />
+      );
+    } else {
+      // Ejercicio de texto por defecto
+      return (
+        <>
+          <Text style={styles.exerciseTitle}>{currentExercise.title}</Text>
+          <Text style={styles.exerciseDescription}>{currentExercise.description}</Text>
           
-          <Text style={styles.exerciseTitle}>{exercise.title}</Text>
-          <Text style={styles.exerciseDescription}>{exercise.description}</Text>
+          {isExerciseCompleted ? (
+            <Text style={styles.completedText}>Completado</Text>
+          ) : (
+            <Text style={styles.pointsText}>Valor: {currentExercise.points || 10} puntos</Text>
+          )}
           
-          {/* Mostrar puntos del ejercicio */}
-          <Text style={styles.pointsText}>Valor: {exercise.points || 10} puntos</Text>
+          <Text style={styles.progressText}>Ejercicio {currentExerciseIndex + 1} de {exercises.length}</Text>
           
-          {exercise.codeTemplate && (
-            <Text style={styles.code}>{exercise.codeTemplate}</Text>
+          {currentExercise.codeTemplate && (
+            <Text style={styles.code}>{currentExercise.codeTemplate}</Text>
           )}
           
           <TextInput
@@ -182,7 +256,7 @@ const CourseExercisesScreen = ({ navigation, route }) => {
             placeholder="Escribe tu respuesta aquí"
             value={answer}
             onChangeText={setAnswer}
-            multiline={exercise.multiline}
+            multiline={currentExercise.multiline}
           />
           
           <TouchableOpacity 
@@ -202,17 +276,35 @@ const CourseExercisesScreen = ({ navigation, route }) => {
               No tienes vidas disponibles. Espera a que se recarguen.
             </Text>
           )}
-        </ScrollView>
-      ) : (
-        <View style={styles.errorContainer}>
-          <Text style={styles.errorText}>No se encontró el ejercicio</Text>
-          <TouchableOpacity 
-            style={styles.backToLessonsButton} 
-            onPress={() => navigation.navigate('CourseLessonsListScreen', { courseId })}
-          >
-            <Text style={styles.backToLessonsText}>Volver a las lecciones</Text>
-          </TouchableOpacity>
+        </>
+      );
+    }
+  };
+
+  return (
+    <View style={styles.container}>
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => navigation.goBack()}>
+          <Image
+            source={require('../assets/back-button.png')} 
+            style={styles.backButton}
+          />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>
+          {isLoading ? 'Cargando...' : `Ejercicio ${currentExerciseIndex + 1} de ${exercises.length}`}
+        </Text>
+      </View>
+
+      {isLoading ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#B297F1" />
+          <Text style={styles.loadingText}>Cargando ejercicio...</Text>
         </View>
+      ) : (
+        <ScrollView style={styles.content}>
+          <LivesDisplay />
+          {renderExerciseContent()}
+        </ScrollView>
       )}
 
       <View style={styles.navBar}>
@@ -337,6 +429,11 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 20,
   },
+  errorSubtext: {
+    fontSize: 12,
+    color: '#999',
+    marginBottom: 20,
+  },
   backToLessonsButton: {
     backgroundColor: '#B297F1',
     paddingVertical: 10,
@@ -381,6 +478,17 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 10,
     fontStyle: 'italic',
+  },
+  progressText: {
+    fontSize: 14,
+    color: '#777',
+    marginBottom: 15,
+  },
+  completedText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#4CD964', // Verde para indicar completado
+    marginBottom: 15,
   },
 });
 

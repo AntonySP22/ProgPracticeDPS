@@ -50,24 +50,28 @@ export const GamificationProvider = ({ children }) => {
 
   // Timer para actualizar el tiempo hasta la próxima vida
   useEffect(() => {
-    if (lives < 5 && timeToNextLife) {
+    if (lives < MAX_LIVES) {
       const interval = setInterval(async () => {
         if (userId) {
-          const { lives: updatedLives, timeToNextLife: updatedTime } = 
-            await gamificationService.updateLives(userId);
-          
-          setLives(updatedLives);
-          setTimeToNextLife(updatedTime);
-          
-          if (updatedLives >= 5) {
-            clearInterval(interval);
+          try {
+            const { lives: updatedLives, timeToNextLife: updatedTime } = 
+              await gamificationService.updateLives(userId);
+            
+            setLives(updatedLives);
+            setTimeToNextLife(updatedTime);
+            
+            if (updatedLives >= MAX_LIVES) {
+              clearInterval(interval);
+            }
+          } catch (error) {
+            console.error('Error actualizando contador de vidas:', error);
           }
         }
       }, 1000);
       
       return () => clearInterval(interval);
     }
-  }, [lives, timeToNextLife, userId]);
+  }, [lives, userId]);
 
   const loadUserProgress = async (uid) => {
     if (!uid) return;
@@ -130,6 +134,9 @@ export const GamificationProvider = ({ children }) => {
       const result = await gamificationService.decreaseLife(userId);
       if (result) {
         setLives(result.lives);
+        // Forzar la actualización del temporizador inmediatamente después
+        const timeInfo = await gamificationService.updateLives(userId);
+        setTimeToNextLife(timeInfo.timeToNextLife);
       }
     } catch (error) {
       console.error('Error restando vida:', error);

@@ -199,18 +199,48 @@ export const gamificationService = {
   // Restar una vida
   decreaseLife: async (userId) => {
     try {
-      // Primero actualizamos para asegurarnos que tenemos el valor correcto
-      const { lives } = await gamificationService.updateLives(userId);
+      const userRef = db.collection('users').doc(userId);
       
-      if (lives <= 0) {
-        throw new Error('El usuario no tiene vidas disponibles');
+      // Obtener datos actuales del usuario
+      const userDoc = await userRef.get();
+      if (!userDoc.exists) {
+        return { lives: 0 };
       }
       
-      const newLives = Math.max(0, lives - 1);
+      const userData = userDoc.data();
+      const gamification = userData.gamification || {};
+      const currentLives = gamification.lives || MAX_LIVES;
       
-      await db.collection('users').doc(userId).update({
-        'gamification.lives': newLives
-      });
+      // Si ya no tiene vidas, no hacer nada
+      if (currentLives <= 0) {
+        return { lives: 0 };
+      }
+      
+      const newLives = currentLives - 1;
+      
+      // IMPORTANTE: Manejo especial cuando se llega a cero vidas
+      // No queremos reiniciar las vidas, solo confirmar que están en cero
+      if (newLives === 0) {
+        console.log("Usuario se quedó sin vidas");
+        await userRef.update({
+          'gamification.lives': 0
+          // No actualizar lastLifeRecharge para mantener el contador funcionando
+        });
+        return { lives: 0 };
+      }
+      
+      // Importante: Solo actualizar lastLifeRecharge si es la primera vida que pierde
+      if (currentLives === MAX_LIVES && newLives === MAX_LIVES - 1) {
+        await userRef.update({
+          'gamification.lives': newLives,
+          'gamification.lastLifeRecharge': firebaseTimestamp()
+        });
+      } else {
+        // Si ya tenía menos del máximo, solo actualizar el contador de vidas
+        await userRef.update({
+          'gamification.lives': newLives
+        });
+      }
       
       return { lives: newLives };
     } catch (error) {

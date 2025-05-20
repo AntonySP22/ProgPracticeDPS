@@ -1,16 +1,21 @@
 // screens/CourseIntroScreen.js
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, StyleSheet, Image, TouchableOpacity, Modal, ActivityIndicator } from 'react-native';
+import { 
+  View, 
+  Text, 
+  ScrollView, 
+  StyleSheet, 
+  Image, 
+  TouchableOpacity 
+} from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { getCourseById } from '../services/courseService';
 
-const CourseIntroScreen = ({ navigation, route }) => {
-  const [isMenuVisible, setIsMenuVisible] = useState(false);
+const CourseIntroScreen = ({ route, navigation }) => {
+  const { courseId } = route.params;
   const [courseData, setCourseData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   
-  const { courseId } = route.params;
-
   useEffect(() => {
     const loadCourseData = async () => {
       try {
@@ -18,23 +23,22 @@ const CourseIntroScreen = ({ navigation, route }) => {
         const data = await getCourseById(courseId);
         setCourseData(data);
       } catch (error) {
-        console.error('Error cargando datos del curso:', error);
+        console.error('Error al cargar datos del curso:', error);
       } finally {
         setIsLoading(false);
       }
     };
-
+    
     loadCourseData();
   }, [courseId]);
 
-  const toggleMenu = () => {
-    setIsMenuVisible(!isMenuVisible);
-  };
-
-  const navigateTo = (screen) => {
-    setIsMenuVisible(false);
-    navigation.navigate(screen);
-  };
+  if (isLoading || !courseData) {
+    return (
+      <View style={styles.loadingContainer}>
+        <Text>Cargando...</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -45,83 +49,46 @@ const CourseIntroScreen = ({ navigation, route }) => {
             style={styles.backButton}
           />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>
-          {isLoading ? 'Cargando...' : `Introducción a ${courseData?.title}`}
-        </Text>
-        <TouchableOpacity onPress={toggleMenu} style={styles.menuButton}>
-          <Icon name="menu" size={28} color="#FFFFFF" />
-        </TouchableOpacity>
+        <Text style={styles.headerTitle}>{courseData.title}</Text>
       </View>
 
-      <Modal
-        transparent={true}
-        visible={isMenuVisible}
-        animationType="slide"
-        onRequestClose={() => setIsMenuVisible(false)}
-      >
-        <View style={styles.menuOverlay}>
-          <View style={styles.menuContainer}>
-            <TouchableOpacity style={styles.menuItem} onPress={() => navigateTo('CoursesScreen')}>
-              <Text style={styles.menuItemText}>Cursos</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.menuItem} onPress={() => navigateTo('Home')}>
-              <Text style={styles.menuItemText}>Inicio</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.menuItem} onPress={() => navigateTo('ProfileScreen')}>
-              <Text style={styles.menuItemText}>Perfil</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.menuItem} onPress={() => navigateTo('HelpScreen')}>
-              <Text style={styles.menuItemText}>Ayuda</Text>
-            </TouchableOpacity>
-          </View>
+      <ScrollView style={styles.scrollContainer}>
+        <View style={styles.imageContainer}>
+          <Image
+            source={{ uri: courseData.imageUrl }}
+            style={styles.courseImage}
+            defaultSource={require('../assets/placeholder.png')}
+          />
         </View>
-      </Modal>
 
-      {isLoading ? (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#B297F1" />
-          <Text style={styles.loadingText}>Cargando información del curso...</Text>
-        </View>
-      ) : (
-        <ScrollView style={styles.scrollContainer}>
-          <View style={styles.imageContainer}>
-            <Image
-              source={{ uri: courseData?.imageUrl }}
-              style={styles.courseImage}
-            />
-          </View>
+        <View style={styles.content}>
+          <Text style={styles.description}>{courseData.description}</Text>
 
-          <View style={styles.content}>
-            <Text style={styles.description}>
-              {courseData?.description}
-            </Text>
-
-            <View style={styles.detailsContainer}>
-              <View style={styles.detailBox}>
-                <Text style={styles.detailBoxTitle}>{courseData?.duration}</Text>
-                <Text style={styles.detailBoxText}>Teoría y práctica</Text>
-              </View>
-              <View style={styles.detailBox}>
-                <Text style={styles.detailBoxTitle}>
-                  {(courseData?.lessons?.length || 0) + (courseData?.exercises?.length || 0)}
-                </Text>
-                <Text style={styles.detailBoxText}>Lecturas</Text>
-              </View>
+          <View style={styles.detailsContainer}>
+            <View style={styles.detailBox}>
+              <Text style={styles.detailBoxTitle}>{courseData.duration}</Text>
+              <Text style={styles.detailBoxText}>Teoría y práctica</Text>
             </View>
-
-            <TouchableOpacity
-              style={styles.learnButton}
-              onPress={() => navigation.navigate('CourseLessonsListScreen', { courseId })}
-            >
-              <Image
-                source={require('../assets/button-bg-1.png')}
-                style={styles.learnButtonBackground}
-              />
-              <Text style={styles.learnButtonText}>Aprender</Text>
-            </TouchableOpacity>
+            <View style={styles.detailBox}>
+              <Text style={styles.detailBoxTitle}>
+                {courseData.lessons ? courseData.lessons.length : 0}
+              </Text>
+              <Text style={styles.detailBoxText}>Lecturas</Text>
+            </View>
           </View>
-        </ScrollView>
-      )}
+
+          <TouchableOpacity
+            style={styles.learnButton}
+            onPress={() => navigation.navigate('CourseLessonsListScreen', { courseId })}
+          >
+            <Image
+              source={require('../assets/button-bg-1.png')}
+              style={styles.learnButtonBackground}
+            />
+            <Text style={styles.learnButtonText}>Comenzar</Text>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
 
       <View style={styles.navBar}>
         <TouchableOpacity 
@@ -149,6 +116,11 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#FFFFFF',
   },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   header: {
     backgroundColor: '#B297F1',
     paddingVertical: 20,
@@ -166,51 +138,6 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     color: '#FFFFFF',
-    flex: 1,
-  },
-  menuButton: {
-    marginLeft: 10,
-  },
-  menuOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'flex-start',
-    alignItems: 'flex-end',
-  },
-  menuContainer: {
-    width: '50%',
-    backgroundColor: '#FFFFFF',
-    marginTop: 50,
-    marginRight: 10,
-    borderRadius: 10,
-    padding: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.8,
-    shadowRadius: 2,
-    elevation: 5,
-  },
-  menuItem: {
-    paddingVertical: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F5F5F5',
-  },
-  menuItemText: {
-    fontSize: 16,
-    color: '#052659',
-    fontWeight: 'bold',
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  loadingText: {
-    marginTop: 10,
-    fontSize: 16,
-    color: '#666',
-  },
-  scrollContainer: {
     flex: 1,
   },
   imageContainer: {

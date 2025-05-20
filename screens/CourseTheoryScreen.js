@@ -32,28 +32,46 @@ const CourseTheoryScreen = ({ navigation, route }) => {
   }, [courseId]);
 
   const handleContinue = async () => {
-    // Verificar si la lección actual tiene ejercicio asociado
+    // Verificar si la lección actual tiene ejercicios asociados
     const currentLesson = courseData?.lessons[lessonIndex];
-    const hasExercise = currentLesson && 
-                       courseData?.exercises && 
+    
+    if (!currentLesson) {
+      console.error("Error: No se encontró la lección actual");
+      return;
+    }
+    
+    console.log("Lección actual:", currentLesson.title, "ID:", currentLesson.id);
+    
+    // Obtener el número total REAL de lecciones desde courseData
+    const actualTotalLessons = courseData?.lessons?.length || 0;
+    console.log(`Lección ${lessonIndex + 1} de ${actualTotalLessons}`);
+    
+    // Verificar si hay ejercicios para esta lección
+    const hasExercises = courseData?.exercises && 
                        courseData.exercises.some(ex => ex.lessonId === currentLesson.id);
     
-    // Marcar la lección como completada y actualizar la racha
+    console.log("¿Tiene ejercicios?:", hasExercises);
+    
+    // Marcar la lección como completada
     if (userId) {
       try {
-        // Registrar la lección como completada
+        // Verificar si la lección tiene ejercicios asociados
+        const hasExercises = courseData?.exercises && 
+                          courseData.exercises.some(ex => ex.lessonId === currentLesson.id);
+        
+        // Si la lección tiene ejercicios, solo marcarla como "teoriaVista" pero no como completada
+        // Si la lección NO tiene ejercicios, marcarla como completada directamente
         await db.collection('users').doc(userId).update({
           [`progress.courses.${courseId}.lessons.${currentLesson.id}`]: {
-            completed: true,
-            completedAt: firebaseTimestamp()
+            teoriaVista: true,
+            completed: !hasExercises, // Solo se marca como completada si NO tiene ejercicios
+            completedAt: !hasExercises ? firebaseTimestamp() : null
           },
           'progress.lastActivity': firebaseTimestamp()
         });
         
         // Si la lección NO tiene ejercicio, actualizar la racha aquí
-        // porque la lección se considera completada al presionar "Continuar"
-        if (!hasExercise) {
-          // Actualizar la racha diaria indicando que se completó una lección
+        if (!hasExercises) {
           await gamificationService.updateStreak(userId, true);
           console.log("Racha actualizada - lección de solo teoría completada");
         }
@@ -63,25 +81,26 @@ const CourseTheoryScreen = ({ navigation, route }) => {
       }
     }
     
-    if (hasExercise) {
-      // Si hay ejercicio, ir a la pantalla de ejercicios
-      const exerciseIndex = courseData.exercises.findIndex(ex => ex.lessonId === currentLesson.id);
-      navigation.navigate('CourseExercisesScreen', { 
-        courseId, 
-        lessonIndex, 
-        exerciseIndex,
-        nextLessonIndex: lessonIndex + 1 < totalLessons ? lessonIndex + 1 : null
-      });
+    if (hasExercises) {
+      // Si hay ejercicios, llamar a handleStartExercises directamente
+      handleStartExercises(currentLesson.id);
     } else {
-      // Si no hay ejercicio, ir a la siguiente lección si existe
-      if (lessonIndex + 1 < totalLessons) {
+      // Si no hay ejercicios, verificamos si hay más lecciones
+      const isLastLesson = lessonIndex >= actualTotalLessons - 1;
+      
+      console.log(`Es última lección?: ${isLastLesson} (índice ${lessonIndex} vs total ${actualTotalLessons})`);
+      
+      if (!isLastLesson) {
+        // Si NO es la última lección, navegamos a la siguiente
+        console.log("Avanzando a la siguiente lección:", lessonIndex + 1);
         navigation.navigate('CourseTheoryScreen', {
           courseId,
           lessonIndex: lessonIndex + 1,
-          totalLessons
+          totalLessons: actualTotalLessons  // Pasar el valor real
         });
       } else {
-        // Si es la última lección, volver a la lista de lecciones
+        // Si ES la última lección, mostramos mensaje de felicitación
+        console.log("Esta es la última lección del curso");
         Alert.alert(
           '¡Felicidades!',
           'Has completado todas las lecciones de este curso.',
@@ -89,6 +108,37 @@ const CourseTheoryScreen = ({ navigation, route }) => {
         );
       }
     }
+  };
+
+  // Modificar el handleStartExercises para usar el lessonId pasado como parámetro
+  const handleStartExercises = (lessonId) => {
+    if (!lessonId) {
+      console.error("Error: No se proporcionó ID de lección");
+      return;
+    }
+    
+    console.log("Preparando ejercicios para lección:", lessonId);
+    
+    // Filtrar ejercicios para esta lección
+    const lessonExercises = courseData?.exercises
+      ?.filter(ex => ex.lessonId === lessonId)
+      ?.sort((a, b) => (a.order || 0) - (b.order || 0)) || [];
+    
+    console.log(`Encontrados ${lessonExercises.length} ejercicios`);
+    
+    if (lessonExercises.length === 0) {
+      Alert.alert("No hay ejercicios", "Esta lección no tiene ejercicios disponibles.");
+      return;
+    }
+    
+    // Navegar con todos los parámetros necesarios
+    navigation.navigate('CourseExercisesScreen', {
+      courseId,
+      lessonId: lessonId, // Usar el lessonId pasado como parámetro
+      exercisesList: lessonExercises,
+      currentExerciseIndex: 0,
+      nextLessonIndex: lessonIndex < (courseData?.lessons?.length - 1) ? lessonIndex + 1 : null
+    });
   };
 
   const currentLesson = courseData?.lessons ? courseData.lessons[lessonIndex] : null;
