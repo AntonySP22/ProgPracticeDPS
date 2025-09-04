@@ -19,7 +19,7 @@
 
 📌 **Documento del Proyecto (PDF):** [Proyecto de Catedra - Fase 1](https://drive.google.com/file/d/1S5RRrFiurgbpfjnz-7C1wk47I0EVrqt7/view?usp=sharing)
 
-📌 **Enlace para ver con Expo Go:** [Enlace para preview](https://expo.dev/preview/update?message=Version%20final*&updateRuntimeVersion=1.0.0&createdAt=2025-05-20T17%3A41%3A06.122Z&slug=exp&projectId=e23f5dd3-65ac-4346-990d-f3a68796c746&group=b455f7f2-b76f-41fe-b573-2ed80d56f210)
+📌 **Enlace para ver con Expo Go:** [Enlace para preview](https://expo.dev/preview/update?message=Cambio+de+proyecto+de+firebase+vinculado&updateRuntimeVersion=1.0.0&createdAt=2025-09-04T00%3A45%3A10.203Z&slug=exp&projectId=e23f5dd3-65ac-4346-990d-f3a68796c746&group=6609eec9-3adb-4748-b413-dbfba38b684e)
 
 ---
 
