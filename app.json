@@ -9,7 +9,7 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
-    "owner": "adanruan27",
+    "owner": "antontsp22",
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
@@ -21,7 +21,7 @@
     },
     "android": {
       "package": "com.progpractice.app",
-      "adaptiveIcon": { 
+      "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       }
@@ -35,8 +35,14 @@
     ],
     "extra": {
       "eas": {
-        "projectId": "progpractice-b4a2a"
+        "projectId": "e23f5dd3-65ac-4346-990d-f3a68796c746"
       }
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/e23f5dd3-65ac-4346-990d-f3a68796c746"
     }
   }
 }

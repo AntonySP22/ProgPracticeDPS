@@ -3,14 +3,14 @@ import 'firebase/compat/auth';
 import 'firebase/compat/firestore';
 import 'firebase/compat/storage';
 
-// Configuración de Firebase - ACTUALIZADA
+// Configuración de Firebase - NUEVO PROYECTO
 const firebaseConfig = {
-  apiKey: "AIzaSyDrw-9e2OjSvpxF-0Ym_eq-LH3qwJOl2RM",
-  authDomain: "progpractice-61657.firebaseapp.com",
-  projectId: "progpractice-61657",
-  storageBucket: "progpractice-61657.firebasestorage.app",
-  messagingSenderId: "489049544643",
-  appId: "1:489049544643:web:25cd9441f75518ebd34f76"
+  apiKey: "AIzaSyB4i196n1vh5DUvYeQnEY7XKdXFijXlyzA",
+  authDomain: "progpractice-b50f1.firebaseapp.com",
+  projectId: "progpractice-b50f1",
+  storageBucket: "progpractice-b50f1.firebasestorage.app",
+  messagingSenderId: "164452496653",
+  appId: "1:164452496653:web:55e6fec0a5b90000bfac44"
 };
 
 if (!firebase.apps.length) {
