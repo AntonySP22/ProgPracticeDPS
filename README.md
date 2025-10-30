@@ -20,6 +20,8 @@
 
 📌 **Documento del Proyecto (PDF):** [Proyecto de Catedra ](https://drive.google.com/file/d/1NHpNoEIYleywkqJ3Q8dOdMx7xEhyIkfg/view?usp=sharing)
 
+📌 **Enlace del SDK53 de ExpoGo(la aplicion fue desarrolada en SDK53 y en playstore esta el SDK54):** [Enlace de APK de ExpoGo](https://github.com/expo/expo-go-releases/releases/download/Expo-Go-2.33.22/Expo-Go-2.33.22.apk)
+
 📌 **Enlace para ver con Expo Go:** [Enlace para preview](https://expo.dev/preview/update?message=Nueva+asignacion+de+firebase+&updateRuntimeVersion=1.0.0&createdAt=2025-10-30T05%3A02%3A07.198Z&slug=exp&projectId=e23f5dd3-65ac-4346-990d-f3a68796c746&group=652f0c20-474c-4d60-bea1-a12ea3fc13b6)
 
 ---
