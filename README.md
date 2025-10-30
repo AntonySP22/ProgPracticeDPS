@@ -8,7 +8,7 @@
 - **Blanca Esmeralda Maravilla Cruz - MC240030** - Grupo Teórico **01T**
 - **Adan Jose Ruano Fuentes - RF240346** - Grupo Teórico **01T**
 - **Rebeca Marcela Orozco Arevalo - OA241153** - Grupo Teórico **01T**
- **Julián Andrés Santacruz Palomino - SP240085** - Grupo Teórico **01T**
+- **Julián Andrés Santacruz Palomino - SP240085** - Grupo Teórico **01T**
 
 ---
 
@@ -20,7 +20,7 @@
 
 📌 **Documento del Proyecto (PDF):** [Proyecto de Catedra ](https://drive.google.com/file/d/1NHpNoEIYleywkqJ3Q8dOdMx7xEhyIkfg/view?usp=sharing)
 
-📌 **Enlace para ver con Expo Go:** [Enlace para preview](https://expo.dev/preview/update?message=Cambio+de+proyecto+de+firebase+vinculado&updateRuntimeVersion=1.0.0&createdAt=2025-09-04T00%3A45%3A10.203Z&slug=exp&projectId=e23f5dd3-65ac-4346-990d-f3a68796c746&group=6609eec9-3adb-4748-b413-dbfba38b684e)
+📌 **Enlace para ver con Expo Go:** [Enlace para preview](https://expo.dev/preview/update?message=Nueva+asignacion+de+firebase+&updateRuntimeVersion=1.0.0&createdAt=2025-10-30T05%3A02%3A07.198Z&slug=exp&projectId=e23f5dd3-65ac-4346-990d-f3a68796c746&group=652f0c20-474c-4d60-bea1-a12ea3fc13b6)
 
 ---
 
