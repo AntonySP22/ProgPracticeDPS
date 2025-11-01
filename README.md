@@ -1,4 +1,4 @@
-# 🌟 ProgPracticeDPS
+# 🌟 ProgPractice
 
 ---
 
